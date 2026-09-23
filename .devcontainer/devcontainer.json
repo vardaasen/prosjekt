@@ -1,0 +1,26 @@
+{
+  "name": "Prosjekt Java 24 Vaadin",
+  "image": "mcr.microsoft.com/devcontainers/java:24",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "24"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "vmware.vscode-boot-dev-pack",
+        "redhat.vscode-xml"
+      ]
+    }
+  },
+  "postCreateCommand": "mvn -version && java -version",
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": {
+      "label": "Spring Boot / Vaadin",
+      "onAutoForward": "openPreview"
+    }
+  }
+}

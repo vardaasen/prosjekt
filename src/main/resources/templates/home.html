@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="no" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${title}">Havbruksbrukt</title>
+  <meta name="description" th:content="${description}">
+  <link rel="stylesheet" href="/styles/site.css">
+</head>
+<body>
+<header class="shell topbar">
+  <a class="brand" href="/">Havbruksbrukt</a>
+  <nav aria-label="Hovedmeny">
+    <a href="/utstyr">Utforsk utstyr</a>
+    <a href="/app">Selg utstyr</a>
+  </nav>
+</header>
+<main class="shell">
+  <section class="hero">
+    <p class="eyebrow">Tryggere gjenbruk</p>
+    <h1>Finn brukt akvakulturutstyr som får nytt liv</h1>
+    <p>En åpen, søkbar markedsplass for profesjonelle kjøpere og selgere.</p>
+    <a class="button" href="/utstyr">Utforsk annonser</a>
+  </section>
+  <section>
+    <h2>Nye annonser</h2>
+    <div class="cards">
+      <article class="card" th:each="listing : ${listings}">
+        <h3><a th:href="@{/utstyr/{slug}(slug=${listing.slug})}" th:text="${listing.title}">Annonse</a></h3>
+        <p th:text="|${listing.location} · ${listing.condition.displayName()}|">Lokasjon · Tilstand</p>
+        <p class="price" th:text="|kr ${#numbers.formatDecimal(listing.priceNok, 0, 'WHITESPACE', 0, 'COMMA')}|">kr 0</p>
+      </article>
+    </div>
+  </section>
+</main>
+</body>
+</html>

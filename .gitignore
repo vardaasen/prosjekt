@@ -1,0 +1,23 @@
+DesignMarketPlace/
+
+# OS / editor
+.DS_Store
+.idea/
+*.iml
+.vscode/settings.json
+
+# Java / Maven
+target/
+.mvn/wrapper/maven-wrapper.jar
+
+# Vaadin / frontend build outputs
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+src/main/frontend/generated/
+src/main/bundles/
+
+# Runtime / local secrets
+.env
+.env.*
+application-local.properties

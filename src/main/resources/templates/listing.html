@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="no" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${title}">Annonse</title>
+  <meta name="description" th:content="${description}">
+  <link rel="stylesheet" href="/styles/site.css">
+</head>
+<body>
+<header class="shell topbar">
+  <a class="brand" href="/">Havbruksbrukt</a>
+  <nav aria-label="Hovedmeny">
+    <a href="/utstyr">Utforsk utstyr</a>
+    <a href="/app">Selg utstyr</a>
+  </nav>
+</header>
+<main class="shell listing-detail">
+  <a href="/utstyr">Tilbake til annonser</a>
+  <h1 th:text="${listing.title}">Annonse</h1>
+  <p class="price" th:text="|kr ${#numbers.formatDecimal(listing.priceNok, 0, 'WHITESPACE', 0, 'COMMA')}|">kr 0</p>
+  <dl>
+    <dt>Lokasjon</dt>
+    <dd th:text="${listing.location}">Lokasjon</dd>
+    <dt>Tilstand</dt>
+    <dd th:text="${listing.condition.displayName()}">Tilstand</dd>
+    <dt>Selger</dt>
+    <dd th:text="${listing.sellerName}">Selger</dd>
+    <dt>Publisert</dt>
+    <dd th:text="${listing.publishedAt}">Dato</dd>
+  </dl>
+  <p th:text="${listing.summary}">Beskrivelse</p>
+  <section>
+    <h2>Dokumentasjon</h2>
+    <ul>
+      <li th:each="document : ${listing.documentation}" th:text="${document}">Dokument</li>
+    </ul>
+  </section>
+</main>
+</body>
+</html>
