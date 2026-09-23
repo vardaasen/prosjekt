@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title th:text="${title}">Utforsk utstyr</title>
   <meta name="description" th:content="${description}">
+  <meta name="robots" th:content="${robots}">
+  <link rel="canonical" th:href="${canonicalUrl}">
   <link rel="stylesheet" href="/styles/site.css">
 </head>
 <body>
@@ -17,7 +19,27 @@
 </header>
 <main class="shell">
   <h1>Utforsk brukt akvakulturutstyr</h1>
-  <p>SEO-vennlig katalogside rendret på serveren. Filtrering og persistens bygges testdrevet videre.</p>
+  <form class="filters" method="get" action="/utstyr">
+    <label>
+      Søk
+      <input type="search" name="q" th:value="${query}" placeholder="Søk etter utstyr">
+    </label>
+    <label>
+      Lokasjon
+      <input type="text" name="lokasjon" th:value="${location}" placeholder="For eksempel Trøndelag">
+    </label>
+    <label>
+      Tilstand
+      <select name="tilstand">
+        <option value="">Alle</option>
+        <option value="GOOD" th:selected="${condition == 'GOOD'}">God stand</option>
+        <option value="USED" th:selected="${condition == 'USED'}">Brukt</option>
+        <option value="NEEDS_SERVICE" th:selected="${condition == 'NEEDS_SERVICE'}">Trenger service</option>
+      </select>
+    </label>
+    <button class="button" type="submit">Filtrer</button>
+  </form>
+  <p class="result-status" role="status" th:text="${resultMessage}">3 annonser funnet.</p>
   <div class="cards">
     <article class="card" th:each="listing : ${listings}">
       <h2><a th:href="@{/utstyr/{slug}(slug=${listing.slug})}" th:text="${listing.title}">Annonse</a></h2>
