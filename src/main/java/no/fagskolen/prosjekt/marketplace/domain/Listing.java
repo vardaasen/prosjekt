@@ -10,20 +10,43 @@ public record Listing(
         String title,
         String location,
         ListingCondition condition,
+        EquipmentCategory category,
         BigDecimal priceNok,
-        String sellerName,
-        boolean verifiedSeller,
+        Seller seller,
         LocalDate publishedAt,
         String summary,
         List<String> documentation) {
+
+    public Listing(String slug,
+                   String title,
+                   String location,
+                   ListingCondition condition,
+                   BigDecimal priceNok,
+                   String sellerName,
+                   boolean verifiedSeller,
+                   LocalDate publishedAt,
+                   String summary,
+                   List<String> documentation) {
+        this(slug,
+                title,
+                location,
+                condition,
+                EquipmentCategory.OTHER,
+                priceNok,
+                new Seller(sellerName, verifiedSeller),
+                publishedAt,
+                summary,
+                documentation);
+    }
 
     public Listing {
         Objects.requireNonNull(slug, "slug");
         Objects.requireNonNull(title, "title");
         Objects.requireNonNull(location, "location");
         Objects.requireNonNull(condition, "condition");
+        Objects.requireNonNull(category, "category");
         Objects.requireNonNull(priceNok, "priceNok");
-        Objects.requireNonNull(sellerName, "sellerName");
+        Objects.requireNonNull(seller, "seller");
         Objects.requireNonNull(publishedAt, "publishedAt");
         Objects.requireNonNull(summary, "summary");
         documentation = List.copyOf(documentation);
@@ -37,5 +60,13 @@ public record Listing(
         if (priceNok.signum() < 0) {
             throw new IllegalArgumentException("priceNok must not be negative");
         }
+    }
+
+    public String sellerName() {
+        return seller.name();
+    }
+
+    public boolean verifiedSeller() {
+        return seller.verified();
     }
 }

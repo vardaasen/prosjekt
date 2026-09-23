@@ -27,6 +27,26 @@ class ListingTest {
         assertThat(listing.documentation()).containsExactly("CE");
     }
 
+    @Test
+    void usesTypedSellerAndCategoryForMarketplaceDomain() {
+        var seller = new Seller("Fjord Drift AS", true, "Trøndelag");
+        var listing = new Listing(
+                "test",
+                "Testutstyr",
+                "Vestland",
+                ListingCondition.GOOD,
+                EquipmentCategory.PUMP,
+                BigDecimal.valueOf(20_000),
+                seller,
+                LocalDate.of(2026, 1, 1),
+                "Kort beskrivelse",
+                List.of("CE"));
+
+        assertThat(listing.category()).isEqualTo(EquipmentCategory.PUMP);
+        assertThat(listing.sellerName()).isEqualTo("Fjord Drift AS");
+        assertThat(listing.verifiedSeller()).isTrue();
+    }
+
     private static Listing listing(BigDecimal price) {
         return new Listing(
                 "test",
