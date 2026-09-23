@@ -1,6 +1,6 @@
 package no.fagskolen.prosjekt.seo;
 
-import no.fagskolen.prosjekt.marketplace.service.ListingService;
+import no.fagskolen.prosjekt.marketplace.catalogue.PublishedListingCatalogue;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,13 +19,13 @@ import java.util.Locale;
 @Controller
 public class PublicMarketplaceController {
 
-    private final ListingService listingService;
+    private final PublishedListingCatalogue catalogue;
     private final String publicBaseUrl;
 
     public PublicMarketplaceController(
-            ListingService listingService,
+            PublishedListingCatalogue catalogue,
             @Value("${app.public-base-url:http://localhost}") String publicBaseUrl) {
-        this.listingService = listingService;
+        this.catalogue = catalogue;
         this.publicBaseUrl = publicBaseUrl.replaceAll("/+$", "");
     }
 
@@ -33,7 +33,7 @@ public class PublicMarketplaceController {
     public String home(Model model) {
         model.addAttribute("title", "Havbruksbrukt");
         model.addAttribute("description", "B2B-markedsplass for brukt akvakulturutstyr.");
-        model.addAttribute("listings", listingService.findPublicListings());
+        model.addAttribute("listings", catalogue.findPublishedListings());
         model.addAttribute("robots", "index,follow");
         model.addAttribute("canonicalUrl", absoluteUrl("/"));
         return "home";
@@ -46,7 +46,7 @@ public class PublicMarketplaceController {
             @RequestParam(defaultValue = "") String tilstand,
             Model model) {
         var condition = parseCondition(tilstand);
-        var listings = listingService.searchPublicListings(q, lokasjon, condition);
+        var listings = catalogue.searchPublishedListings(q, lokasjon, condition);
         var filtered = !q.isBlank() || !lokasjon.isBlank() || !tilstand.isBlank();
 
         model.addAttribute("title", "Utforsk brukt akvakulturutstyr");
@@ -69,7 +69,7 @@ public class PublicMarketplaceController {
             @PathVariable String slug,
             Model model,
             HttpServletResponse response) {
-        var listing = listingService.findBySlug(slug);
+        var listing = catalogue.findPublishedBySlug(slug);
         if (listing.isEmpty()) {
             response.setStatus(HttpStatus.NOT_FOUND.value());
             return "error/404";
@@ -95,7 +95,7 @@ public class PublicMarketplaceController {
 
     @GetMapping(value = "/sitemap.xml", produces = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<String> sitemap() {
-        var urls = listingService.findPublicListings().stream()
+        var urls = catalogue.findPublishedListings().stream()
                 .map(listing -> """
                         <url><loc>%s</loc><lastmod>%s</lastmod></url>
                         """.formatted(absoluteUrl("/utstyr/" + listing.slug()), listing.publishedAt()))

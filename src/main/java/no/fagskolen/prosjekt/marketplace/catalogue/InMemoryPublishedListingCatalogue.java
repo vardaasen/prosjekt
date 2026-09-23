@@ -1,10 +1,10 @@
-package no.fagskolen.prosjekt.marketplace.service;
+package no.fagskolen.prosjekt.marketplace.catalogue;
 
 import no.fagskolen.prosjekt.marketplace.domain.EquipmentCategory;
 import no.fagskolen.prosjekt.marketplace.domain.Listing;
 import no.fagskolen.prosjekt.marketplace.domain.ListingCondition;
 import no.fagskolen.prosjekt.marketplace.domain.Seller;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Locale;
 
-@Service
-public class ListingService {
+@Component
+public class InMemoryPublishedListingCatalogue implements PublishedListingCatalogue {
 
     private final List<Listing> listings = List.of(
             new Listing(
@@ -50,11 +50,13 @@ public class ListingService {
                     "Komplett fôrflåte for videre vurdering. Selger kan levere mer dokumentasjon ved forespørsel.",
                     List.of("Bildepakke")));
 
-    public List<Listing> findPublicListings() {
+    @Override
+    public List<Listing> findPublishedListings() {
         return listings;
     }
 
-    public List<Listing> searchPublicListings(String query, String location, ListingCondition condition) {
+    @Override
+    public List<Listing> searchPublishedListings(String query, String location, ListingCondition condition) {
         var normalizedQuery = normalize(query);
         var normalizedLocation = normalize(location);
 
@@ -69,7 +71,8 @@ public class ListingService {
                 .toList();
     }
 
-    public Optional<Listing> findBySlug(String slug) {
+    @Override
+    public Optional<Listing> findPublishedBySlug(String slug) {
         return listings.stream()
                 .filter(listing -> listing.slug().equals(slug))
                 .findFirst();
