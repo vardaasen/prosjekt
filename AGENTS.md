@@ -39,15 +39,29 @@ Bruk rød-grønn-refaktor:
 
 Foretrukne skills: generell TDD, Spring Boot Testing og Java Junit. Agentene i `.github/agents/` er tilpasset Maven/JUnit.
 
-## Skills
+## Agent skills
 
-Prosjektspesifikke skills ligger i `.github/skills/`:
+Prosjektspesifikke skills ligger i `.github/skills/`. Matt Pocock-settet er
+bevisst kuratert til arbeidsflyter prosjektet bruker; de øvrige skillene
+dekker Java, Vaadin, SEO og database. Provenans for det kuraterte settet ligger
+i `skills-lock.json`.
 
-- `project-setup` — gjenta/utvide denne initieringen.
-- `java-development` — Java 24, Spring Boot og TDD-regler.
-- `vaadin-open-first` — Vaadin Flow med åpne komponenter som standard.
-- `database` — databasevalg, migreringer og teststrategi.
-- `frontend-seo` — server-rendered SEO, tilgjengelighet og designmigrering.
+For domene-/persistensfasen brukes særlig `domain-modeling`,
+`codebase-design`, `tdd`, `effective-java`, `database`, `spring-data-jpa` og
+`postgres-best-practices`; Vaadin- og SEO-skills brukes når deres flater
+endres.
+
+### Issue tracker
+
+GitHub Issues is the repo's issue tracker. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default repo triage labels are `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, and `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context repo layout. See `docs/agents/domain.md`.
 
 ## Fallgruver
 
