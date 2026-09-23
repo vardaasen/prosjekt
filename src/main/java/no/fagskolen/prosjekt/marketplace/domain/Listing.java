@@ -11,6 +11,7 @@ public record Listing(
         String location,
         ListingCondition condition,
         EquipmentCategory category,
+        ListingPublicationStatus publicationStatus,
         BigDecimal priceNok,
         Seller seller,
         LocalDate publishedAt,
@@ -32,6 +33,7 @@ public record Listing(
                 location,
                 condition,
                 EquipmentCategory.OTHER,
+                ListingPublicationStatus.PUBLISHED,
                 priceNok,
                 new Seller(sellerName, verifiedSeller),
                 publishedAt,
@@ -45,6 +47,7 @@ public record Listing(
         Objects.requireNonNull(location, "location");
         Objects.requireNonNull(condition, "condition");
         Objects.requireNonNull(category, "category");
+        Objects.requireNonNull(publicationStatus, "publicationStatus");
         Objects.requireNonNull(priceNok, "priceNok");
         Objects.requireNonNull(seller, "seller");
         Objects.requireNonNull(publishedAt, "publishedAt");

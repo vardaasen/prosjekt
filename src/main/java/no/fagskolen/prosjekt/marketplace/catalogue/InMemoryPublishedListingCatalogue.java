@@ -3,6 +3,7 @@ package no.fagskolen.prosjekt.marketplace.catalogue;
 import no.fagskolen.prosjekt.marketplace.domain.EquipmentCategory;
 import no.fagskolen.prosjekt.marketplace.domain.Listing;
 import no.fagskolen.prosjekt.marketplace.domain.ListingCondition;
+import no.fagskolen.prosjekt.marketplace.domain.ListingPublicationStatus;
 import no.fagskolen.prosjekt.marketplace.domain.Seller;
 import org.springframework.stereotype.Component;
 
@@ -15,13 +16,17 @@ import java.util.Locale;
 @Component
 public class InMemoryPublishedListingCatalogue implements PublishedListingCatalogue {
 
-    private final List<Listing> listings = List.of(
-            new Listing(
+    private final List<Listing> listings;
+
+    public InMemoryPublishedListingCatalogue() {
+        this(List.of(
+                new Listing(
                     "sentrifugalpumpe-450",
                     "Sentrifugalpumpe 450 m³/t",
                     "Trøndelag",
                     ListingCondition.GOOD,
                     EquipmentCategory.PUMP,
+                    ListingPublicationStatus.PUBLISHED,
                     BigDecimal.valueOf(185_000),
                     new Seller("Fjord Drift AS", true, "Trøndelag"),
                     LocalDate.of(2026, 9, 1),
@@ -33,6 +38,7 @@ public class InMemoryPublishedListingCatalogue implements PublishedListingCatalo
                     "Møre og Romsdal",
                     ListingCondition.USED,
                     EquipmentCategory.NET,
+                    ListingPublicationStatus.PUBLISHED,
                     BigDecimal.valueOf(92_000),
                     new Seller("Kystbruket SA", true, "Møre og Romsdal"),
                     LocalDate.of(2026, 8, 18),
@@ -44,15 +50,23 @@ public class InMemoryPublishedListingCatalogue implements PublishedListingCatalo
                     "Nordland",
                     ListingCondition.GOOD,
                     EquipmentCategory.FLOATING_STRUCTURE,
+                    ListingPublicationStatus.PUBLISHED,
                     BigDecimal.valueOf(1_250_000),
                     new Seller("Nordhav Utstyr", false, "Nordland"),
                     LocalDate.of(2026, 8, 4),
                     "Komplett fôrflåte for videre vurdering. Selger kan levere mer dokumentasjon ved forespørsel.",
-                    List.of("Bildepakke")));
+                    List.of("Bildepakke"))));
+    }
+
+    public InMemoryPublishedListingCatalogue(List<Listing> listings) {
+        this.listings = List.copyOf(listings);
+    }
 
     @Override
     public List<Listing> findPublishedListings() {
-        return listings;
+        return listings.stream()
+                .filter(listing -> listing.publicationStatus() == ListingPublicationStatus.PUBLISHED)
+                .toList();
     }
 
     @Override
@@ -60,7 +74,7 @@ public class InMemoryPublishedListingCatalogue implements PublishedListingCatalo
         var normalizedQuery = normalize(query);
         var normalizedLocation = normalize(location);
 
-        return listings.stream()
+        return findPublishedListings().stream()
                 .filter(listing -> normalizedQuery.isBlank()
                         || normalize(listing.title()).contains(normalizedQuery)
                         || normalize(listing.summary()).contains(normalizedQuery)
@@ -73,7 +87,7 @@ public class InMemoryPublishedListingCatalogue implements PublishedListingCatalo
 
     @Override
     public Optional<Listing> findPublishedBySlug(String slug) {
-        return listings.stream()
+        return findPublishedListings().stream()
                 .filter(listing -> listing.slug().equals(slug))
                 .findFirst();
     }

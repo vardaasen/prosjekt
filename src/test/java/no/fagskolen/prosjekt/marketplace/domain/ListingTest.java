@@ -36,6 +36,7 @@ class ListingTest {
                 "Vestland",
                 ListingCondition.GOOD,
                 EquipmentCategory.PUMP,
+                ListingPublicationStatus.PUBLISHED,
                 BigDecimal.valueOf(20_000),
                 seller,
                 LocalDate.of(2026, 1, 1),
@@ -43,6 +44,7 @@ class ListingTest {
                 List.of("CE"));
 
         assertThat(listing.category()).isEqualTo(EquipmentCategory.PUMP);
+        assertThat(listing.publicationStatus()).isEqualTo(ListingPublicationStatus.PUBLISHED);
         assertThat(listing.sellerName()).isEqualTo("Fjord Drift AS");
         assertThat(listing.verifiedSeller()).isTrue();
     }

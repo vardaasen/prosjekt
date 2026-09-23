@@ -37,6 +37,11 @@ _Avoid_: Adresse, region
 Selgers oppgitte vurdering av utstyrets stand ved publisering.
 _Avoid_: Kvalitet, status
 
+**Publiseringsstatus**:
+Annonsens livssyklus i markedsplassen: utkast, publisert eller arkivert.
+Bare en publisert annonse er offentlig synlig.
+_Avoid_: Synlighetsstatus, annonsetilstand
+
 ## Tillit og dialog
 
 **Dokumentasjon**:

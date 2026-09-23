@@ -20,6 +20,8 @@ Sist oppdatert: 2026-09-23
   utstyrskategori, dokumentasjon, verifisert selger og forespørsel.
 - Skilt domenemodellen tydeligere med `Seller` og `EquipmentCategory` i
   tillegg til `Listing`.
+- Innført `DRAFT`, `PUBLISHED` og `ARCHIVED` som publiseringsstatus på en
+  annonse; katalog-seamen eksponerer bare publiserte annonser.
 - Låst Spring Boot-styrt Log4j-versjon til `2.25.5` som forebyggende
   dependency-overstyring.
 - Valgt domeneobjekter uten JPA-annotasjoner og Data Mapper ved en kommende
@@ -31,7 +33,7 @@ Sist oppdatert: 2026-09-23
 | --- | --- | --- |
 | Offentlig lesing og SEO | Spring MVC + Thymeleaf | Prototype fungerer |
 | Innlogget appflate | Vaadin Flow under `/app` | Minimal startflate |
-| Data | In-memory `ListingService` | Første neste skive: persistens med publiseringsstatus |
+| Data | In-memory katalogadapter | PostgreSQL/JPA-adapter er neste skive |
 | Identitet og tilgang | Ikke implementert | Må avklares før selgerfunksjoner |
 | Designkilde | Eksisterende designmanual + mockups | Figma-designsystem skal formaliseres |
 
@@ -49,24 +51,22 @@ Sist oppdatert: 2026-09-23
 
 ## Før neste funksjonelle milepæl
 
-1. Definer en liten katalog-seam før persistens: les publiserte annonser,
-   søk i dem og hent én annonse per slug.
-2. Implementer persistens og publiseringsstatus for annonser som én vertikal
-   skive, med `DRAFT`, `PUBLISHED` og `ARCHIVED`.
-3. La offentlig katalog, annonsedetalj og sitemap bare bruke
+1. Implementer PostgreSQL/JPA-adapter for katalog-seamen med Flyway-migrering
+   og Testcontainers-baserte integrasjonstester.
+2. La offentlig katalog, annonsedetalj og sitemap bare bruke
    `PUBLISHED`-annonser; utkast og arkiverte annonser skal gi 404 offentlig.
-4. Opprett Figma-artefakt for offentlig katalog, annonsedetalj og
+3. Opprett Figma-artefakt for offentlig katalog, annonsedetalj og
    selgerinngang basert på eksisterende designmanual.
-5. Implementer identitet, tilgangskontroll og sikker selgerflyt under `/app`
+4. Implementer identitet, tilgangskontroll og sikker selgerflyt under `/app`
    først etter at sikkerhetsbaselinen er gjennomgått.
-6. Koble kontaktforespørsel fra offentlig annonsedetalj til autentisert eller
+5. Koble kontaktforespørsel fra offentlig annonsedetalj til autentisert eller
    eksplisitt gjesteprosess.
 
 ## Neste naturlige steg
 
-Neste tekniske steg er å etablere en katalogmodul med en liten interface for
-publiserte annonser, før persistensadapteren introduseres. Første funksjonelle
-skive er eksplisitt `DRAFT`/`PUBLISHED`/`ARCHIVED`: bare publiserte annonser
-skal være synlige i katalog, annonsedetalj og sitemap. Dette gjør SEO, 404,
-tilgangskontroll og senere selgerflyt deterministisk. Før selve selgerflyten
-bygges, må sikkerhetsbaselinen i `docs/security-baseline.md` være gjennomgått.
+Neste tekniske steg er å innføre PostgreSQL/JPA-adapteren for den eksisterende
+katalog-seamen, med Flyway og Testcontainers. `DRAFT`/`PUBLISHED`/`ARCHIVED`
+er nå en del av domenet: bare publiserte annonser skal være synlige i katalog,
+annonsedetalj og sitemap. Dette gjør SEO, 404, tilgangskontroll og senere
+selgerflyt deterministisk. Før selve selgerflyten bygges, må
+sikkerhetsbaselinen i `docs/security-baseline.md` være gjennomgått.
