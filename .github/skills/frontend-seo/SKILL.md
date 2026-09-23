@@ -7,3 +7,4 @@ Use this skill for public pages, design migration, accessibility and SEO.
 - Design tokens come from the design handbook, but mockup HTML is only reference material.
 - Test keyboard accessibility and visible focus for interactive controls.
 - Add decision notes for SEO tools or external services before connecting them.
+- Keep fundamental userflows in `docs/userflows/` as Mermaid diagrams so they are versioned, reviewable and easy to update alongside implementation.
