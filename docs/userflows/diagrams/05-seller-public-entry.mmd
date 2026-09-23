@@ -1,0 +1,15 @@
+flowchart TD
+    A[Åpner Hjem eller Selg utstyr] --> B[Leser hva markedsplassen tilbyr]
+    B --> C{Vil selge utstyr?}
+    C -- Nei --> D[Om/Kontakt eller tilbake til katalog]
+    C -- Ja --> E[Klikker Selg utstyr]
+    E --> F{Innlogget som selger?}
+    F -- Nei --> G[Logg inn / opprett selgerkonto]
+    F -- Ja --> H[Vaadin Flow: Opprett annonse]
+    G --> H
+    H --> I[Last opp bilder]
+    I --> J[Legg inn produktdetaljer]
+    J --> K[Pris og dokumentasjon]
+    K --> L{Fullfør nå?}
+    L -- Ja --> M[Send til verifisering/publisering]
+    L -- Nei --> N[Lagre som utkast]

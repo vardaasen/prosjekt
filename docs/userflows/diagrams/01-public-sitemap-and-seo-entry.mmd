@@ -1,0 +1,23 @@
+flowchart TD
+    Search[Søkemotor / delt lenke] --> Home[Hjem /]
+    Search --> Browse[Utforsk utstyr /utstyr]
+    Search --> Category["Kategori /utstyr/kategori/{kategori}"]
+    Search --> Detail["Listedetaljer /utstyr/{slug}"]
+
+    Home --> HomeSearch[Søk etter utstyr]
+    Home --> FeaturedCategories[Utvalgte kategorier]
+    Home --> FeaturedListings[Utvalgte annonser]
+
+    HomeSearch --> Browse
+    FeaturedCategories --> Category
+    FeaturedListings --> Detail
+    Browse --> Category
+    Category --> Detail
+
+    Home --> Sell[Selg utstyr /selg]
+    Home --> About[Om/Kontakt /om]
+    Home --> Login[Logg inn /app/login]
+
+    Sell --> Login
+    Detail --> Inquiry[Send forespørsel]
+    Inquiry --> Login

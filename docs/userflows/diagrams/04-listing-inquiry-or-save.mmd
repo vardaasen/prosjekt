@@ -1,0 +1,14 @@
+flowchart TD
+    A[Åpner listedetalj] --> B[Ser bilder og produktinformasjon]
+    B --> C[Kontrollerer dokumentasjon og sertifikater]
+    C --> D[Leser informasjon om selger]
+    D --> E{Tillitsnivå høyt nok?}
+    E -- Nei --> F[Forlater siden eller går tilbake til katalog]
+    E -- Trenger mer info --> G[Send forespørsel]
+    E -- Ja, men senere --> H[Lagre annonse]
+    G --> I{Innlogget?}
+    H --> I
+    I -- Nei --> J[Logg inn / opprett kjøperkonto med retur-URL]
+    I -- Ja --> K[Opprett forespørsel eller lagring i appen]
+    J --> K
+    K --> L[Bruker returneres til annonse/appstatus]

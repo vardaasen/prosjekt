@@ -1,0 +1,17 @@
+flowchart TD
+    A[Åpner /utstyr] --> B[Ser server-rendered katalog]
+    B --> C[Setter filter]
+    C --> D{Filtertype}
+    D -- Lokasjon --> E["/utstyr?lokasjon=..."]
+    D -- Tilstand --> F["/utstyr?tilstand=..."]
+    D -- Pris --> G["/utstyr?pris=..."]
+    D -- Kategori --> H["/utstyr/kategori/{kategori}"]
+    E --> I[Resultatliste]
+    F --> I
+    G --> I
+    H --> I
+    I --> J{Treff?}
+    J -- Nei --> K[Nulltreff med forslag om bredere filter]
+    K --> B
+    J -- Ja --> L[Velger annonse]
+    L --> M[Listedetalj med dokumentasjon og selgerinfo]

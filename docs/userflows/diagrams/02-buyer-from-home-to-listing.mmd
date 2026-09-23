@@ -1,0 +1,17 @@
+flowchart TD
+    A[Åpner forsiden] --> B{Har konkret behov?}
+    B -- Ja --> C[Skriver søkeord]
+    B -- Nei --> D[Velger utvalgt kategori]
+    C --> E[Server-rendered søkeresultat]
+    D --> F[Server-rendered kategoriside]
+    E --> G[Skanner produktkort]
+    F --> G
+    G --> H{Relevant annonse?}
+    H -- Nei --> I[Justerer søk eller kategori]
+    I --> E
+    H -- Ja --> J[Åpner listedetaljer]
+    J --> K[Vurderer pris, lokasjon, tilstand og dokumentasjon]
+    K --> L{Neste steg}
+    L -- Send forespørsel --> M[Logg inn eller opprett kjøperkonto]
+    L -- Lagre annonse --> M
+    L -- Del/skriv ut --> N[Bruker offentlig side uten innlogging]
