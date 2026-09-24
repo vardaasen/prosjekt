@@ -219,8 +219,8 @@ av de tre rollene over).
 Compose-filen kjører Keycloak med `start-dev` og en lokal, ukryptert
 utviklingsdatabase. Produksjon må kjøre Keycloak separat med HTTPS, sikker
 hemmelighetsforvaltning, særskilt realm/klient, administratorkonto og
-produksjonsdatabase. Overstyr OIDC-endepunktene gjennom de dokumenterte
-`KEYCLOAK_*`-miljøvariablene; aldri legg produksjonsverdier i
+produksjonsdatabase. Overstyr OIDC discovery gjennom den dokumenterte
+`KEYCLOAK_ISSUER_URI`-miljøvariabelen; aldri legg produksjonsverdier i
 `application.properties`.
 
 Følg userflow 8, `docs/userflows/diagrams/08-operator-installs-and-bootstraps-environment.mmd`,

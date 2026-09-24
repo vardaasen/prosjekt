@@ -6,6 +6,9 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -137,6 +140,30 @@ class PublicMarketplaceControllerTest {
                 .andExpect(content().string(containsString("<h1>Søk som selger</h1>")))
                 .andExpect(content().string(containsString("name=\"sellerName\"")))
                 .andExpect(content().string(not(containsString("vaadin-"))));
+    }
+
+    @Test
+    void redirectsOidcLogoutThroughKeycloakEndSessionEndpoint() throws Exception {
+        var loginRegistration = ClientRegistration.withRegistrationId("keycloak")
+                .clientId("marketplace")
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .redirectUri("{baseUrl}/login/oauth2/code/{registrationId}")
+                .scope("openid", "profile", "email")
+                .authorizationUri("https://example.invalid/auth")
+                .tokenUri("https://example.invalid/token")
+                .userInfoUri("https://example.invalid/userinfo")
+                .jwkSetUri("https://example.invalid/jwks")
+                .userNameAttributeName(IdTokenClaimNames.SUB)
+                .build();
+
+        mockMvc.perform(get("/logout").with(oidcLogin()
+                        .clientRegistration(loginRegistration)
+                        .idToken(token -> token.subject("buyer-subject"))))
+                .andExpect(status().isFound())
+                .andExpect(header().string("Location", containsString(
+                        "http://localhost:8180/realms/havbruksbrukt/protocol/openid-connect/logout")))
+                .andExpect(header().string("Location", containsString("post_logout_redirect_uri=http://localhost/")))
+                .andExpect(header().string("Location", containsString("id_token_hint=")));
     }
 
     @Test
