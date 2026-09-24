@@ -34,6 +34,9 @@ Sist oppdatert: 2026-09-24
 - Etablert lokal Keycloak-baseret OIDC-innlogging for `/app` med Authorization
   Code og PKCE. `SELLER`, `BUYER` og `ADMIN` er Keycloak realm-roller; `/app`
   krever `SELLER`.
+- Introdusert `SellerAccount` som en idempotent, persistet kobling mellom
+  Keycloak-subject (`sub`) og domenets `Seller`. Kontoen opprettes ved første
+  innlogging som `SELLER` og eier kommende utkast og annonser.
 
 ## Nåværende arkitektur
 
@@ -43,6 +46,7 @@ Sist oppdatert: 2026-09-24
 | Innlogget appflate | Vaadin Flow + Keycloak OIDC under `/app` | Krever `SELLER`; minimal startflate |
 | Data | PostgreSQL + Flyway + JPA Data Mapper | Aktiv katalogadapter; in-memory-adapter beholdes for enhetstester |
 | Identitet og tilgang | Keycloak OIDC + Spring Security | Lokal demo-realm; produksjonskonfigurasjon gjenstår |
+| Selgereierskap | `SellerAccount` + Flyway V3 | Stabil OIDC-subject kobles til selger; listing-eierskap kommer neste |
 | Designkilde | Eksisterende designmanual + mockups | Figma-designsystem skal formaliseres |
 
 ## Kvalitetssignal
@@ -66,15 +70,15 @@ Sist oppdatert: 2026-09-24
    `PUBLISHED`-annonser; utkast og arkiverte annonser skal gi 404 offentlig.
 2. Opprett Figma-artefakt for offentlig katalog, annonsedetalj og
    selgerinngang basert på eksisterende designmanual.
-3. Implementer identitet, tilgangskontroll og sikker selgerflyt under `/app`
-   med eierskapskontroll for hver muterende operasjon.
+3. Implementer utkastflyt under `/app`, der `SellerAccount` eier hver annonse
+   og serveren håndhever eierskapet for alle muterende operasjoner.
 4. Koble kontaktforespørsel fra offentlig annonsedetalj til autentisert eller
    eksplisitt gjesteprosess.
 
 ## Neste naturlige steg
 
-Neste funksjonelle steg er `SellerAccount`: en kobling mellom OIDC-subject
-(`sub`) og domenets `Seller`, før selgere kan opprette eller endre egne
-annonser. `DRAFT`/`PUBLISHED`/`ARCHIVED` er en del av domenet: bare publiserte
-annonser er synlige i katalog, annonsedetalj og sitemap. Dette gjør SEO, 404,
-tilgangskontroll og senere selgerflyt deterministisk.
+Neste funksjonelle steg er en utkastflyt: en innlogget selger kan opprette,
+redigere, publisere og arkivere **egne** annonser. `SellerAccount` må da være
+den persisted eieren av hver annonse, og alle muterende operasjoner må sjekke
+eierskapet på serveren. `DRAFT`/`PUBLISHED`/`ARCHIVED` er en del av domenet:
+bare publiserte annonser er synlige i katalog, annonsedetalj og sitemap.

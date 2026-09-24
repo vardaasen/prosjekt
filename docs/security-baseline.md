@@ -10,6 +10,9 @@ Dette er en prototype-baseline, ikke en full sikkerhetssertifisering. Punktene s
 - **Tilgang:** `/app` krever Keycloak-rollen `SELLER`; alle offentlige SEO-ruter
   forblir anonyme. Keycloak realm-roller mappes eksplisitt til Spring
   authorities med `ROLE_`-prefiks.
+- **Selgereierskap:** En `SellerAccount` kobler Keycloaks stabile `sub` til en
+  selger uten å kopiere bruker- eller passorddata. Kontoregistrering er
+  idempotent, slik at gjentatt innlogging ikke oppretter flere selgerkontoer.
 - **Server-rendering:** Offentlige sider rendres på serveren; ingen brukerinput settes inn som rå HTML.
 - **Thymeleaf escaping:** Tekst fra listingdata går via `th:text`, som reduserer XSS-risiko.
 - **Inputkontroll:** `tilstand` avvises med `400` når verdien ikke er en kjent enum.
@@ -36,6 +39,8 @@ Dette er en prototype-baseline, ikke en full sikkerhetssertifisering. Punktene s
   demo-realm og demo-brukere bare for utvikling; produksjon må bruke en
   separat realm, registrert klient, hemmelighetsforvaltning og administratorkonto.
 - Håndhev autorisasjon server-side på hver selgeroperasjon; skjult navigasjon er ikke tilgangskontroll.
+- La hver annonse referere til sin `SellerAccount` før utkastflyten innføres,
+  og slå opp eieren på serveren ved redigering, publisering og arkivering.
 - Skill roller for kjøper, selger og administrasjon.
 - Beskytt state-changing requests med CSRF og sikre session cookies (`Secure`, `HttpOnly`, passende `SameSite`).
 

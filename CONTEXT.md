@@ -15,6 +15,12 @@ _Avoid_: Produkt, oppføring, listing
 Virksomheten som tilbyr utstyr gjennom en annonse.
 _Avoid_: Leverandør, eier
 
+**Selgerkonto**:
+Koblingen mellom en innlogget OIDC-identitets stabile subject (`sub`) og en
+selger. Kontoen eier fremtidige utkast og annonser; den inneholder ikke
+passord eller andre identitetsleverandørdata.
+_Avoid_: Brukerkonto, Keycloak-bruker
+
 **Kjøper**:
 Virksomheten som vurderer utstyr i markedsplassen, uavhengig av om den ender
 med å kjøpe.
