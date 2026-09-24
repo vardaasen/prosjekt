@@ -15,14 +15,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.beans.factory.annotation.Value;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import no.fagskolen.prosjekt.marketplace.domain.ListingCondition;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import com.vaadin.flow.shared.ApplicationConstants;
 
 import java.util.Locale;
 
@@ -32,37 +28,18 @@ public class PublicMarketplaceController {
     private final PublishedListingCatalogue catalogue;
     private final SellerApplications sellerApplications;
     private final String publicBaseUrl;
-    private final org.springframework.web.servlet.mvc.Controller vaadinForwardingController;
 
     public PublicMarketplaceController(
             PublishedListingCatalogue catalogue,
             SellerApplications sellerApplications,
-            @Value("${app.public-base-url:http://localhost}") String publicBaseUrl,
-            org.springframework.web.servlet.mvc.Controller vaadinForwardingController) {
+            @Value("${app.public-base-url:http://localhost}") String publicBaseUrl) {
         this.catalogue = catalogue;
         this.sellerApplications = sellerApplications;
         this.publicBaseUrl = publicBaseUrl.replaceAll("/+$", "");
-        this.vaadinForwardingController = vaadinForwardingController;
     }
 
-    // Vaadin er kartlagt på servlet-roten (vaadin.url-mapping="/*", standard), så
-    // rammeverkets interne init/uidl/heartbeat-forespørsler går til nøyaktig "/" -
-    // samme sti som denne offentlige forsiden. Vaadins egen Spring-integrasjon løser
-    // akkurat dette ved å registrere en "vaadinForwardingController"-bean som
-    // videresender til den underliggende Vaadin-servleten; vi bruker den direkte når
-    // forespørselen bærer Vaadins markør "v-r", ellers rendres forsiden som normalt.
-    // Uten dette blir de interne kallene enten stille forkastet (grå skjerm på
-    // /admin og /app) eller avvist med 405 (evig "Connection lost"-reconnect-løkke).
-    // Se docs/local-development.md.
-    @RequestMapping(value = "/", method = { RequestMethod.GET, RequestMethod.POST })
-    public String home(Model model, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        if (request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER) != null) {
-            vaadinForwardingController.handleRequest(request, response);
-            return null;
-        }
-        if (request.getMethod().equals("POST")) {
-            throw new ResponseStatusException(HttpStatus.METHOD_NOT_ALLOWED);
-        }
+    @GetMapping("/")
+    public String home(Model model) {
         model.addAttribute("title", "Havbruksbrukt");
         model.addAttribute("description", "B2B-markedsplass for brukt akvakulturutstyr.");
         model.addAttribute("listings", catalogue.findPublishedListings());

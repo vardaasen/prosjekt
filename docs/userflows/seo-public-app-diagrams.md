@@ -23,8 +23,8 @@ beskriver et bredere målbilde enn den implementerte prototypen.
 | 3. Browse/filter til listedetalj | Delvis | Katalog, fritekst, lokasjon, tilstand, nulltreff og detaljside | Prisfilter og kategori-URL-er |
 | 4. Listedetalj til forespørsel eller lagring | Delvis | Publisert detaljside med selger- og dokumentasjonsdata | Forespørsel, lagring, kjøperinnlogging og retur-URL |
 | 5. Selger starter fra offentlig side | Delvis | `/selg`, Keycloak-innlogging, `SELLER`-krav på `/app`, privat opprettelse av utkast og publisering | Bilder, dokumenter, redigering og arkivering |
-| 7. Administrator godkjenner selgersøknad | Delvis | Server-rendered `/selgersoknad`, vedvarende `PENDING`-søknad, `/admin`, auditlogg, aktivering av selgerkonto, administratorutlogging og testet Keycloak Admin API-adapter | E-postverifisert selvregistrering, rate limiting og per-miljø service-konto/hemmelighet |
-| 8. Operatør installerer og bootstrapper miljø | Delvis | Lokal Compose, realm-import og beskyttet `/admin` | Produksjonsrunbook, hemmelighetsforvaltning og tilgangsregister |
+| 7. Administrator godkjenner selgersøknad | Delvis | Server-rendered `/selgersoknad`, vedvarende `PENDING`-søknad, `/app/admin`, auditlogg, aktivering av selgerkonto, administratorutlogging og testet Keycloak Admin API-adapter | E-postverifisert selvregistrering, rate limiting og per-miljø service-konto/hemmelighet |
+| 8. Operatør installerer og bootstrapper miljø | Delvis | Lokal Compose, realm-import og beskyttet `/app/admin` | Produksjonsrunbook, hemmelighetsforvaltning og tilgangsregister |
 | 9. Lokal demo og rollebytte | Ferdig for lokal demo | Demo-identiteter, Keycloak-profil, søknad, godkjenning, reinnlogging og 403-/innloggingsfeil | Selvregistrering og produksjonsidentiteter |
 
 Diagram 6 dekker den implementerte selgerflyten som ikke fantes da de
@@ -169,7 +169,7 @@ flowchart TD
 flowchart TD
     A[Autentisert OIDC-identitet uten SELLER] --> C[Sender selgersøknad på /selgersoknad]
     C --> D[Lagre søknad som PENDING uten SELLER-rolle]
-    D --> E[Markedsplassadministrator åpner /admin]
+    D --> E[Markedsplassadministrator åpner /app/admin]
     E --> F{Har brukeren ADMIN-rolle?}
     F -- Nei --> G[Avvis tilgang]
     F -- Ja --> H[Vurderer virksomhetsopplysninger]
@@ -184,7 +184,7 @@ flowchart TD
     O --> Q
     M --> Q
     Q -- Ja --> H
-    Q -- Nei --> R[Administrator logger ut med knappen «Logg ut» i /admin]
+    Q -- Nei --> R[Administrator logger ut med knappen «Logg ut» i /app/admin]
     O --> P[Bruker logger inn på nytt som SELLER og åpner /app]
 ```
 
@@ -200,8 +200,8 @@ flowchart TD
     F --> G[Tildel kun realmrollen ADMIN]
     G --> H[Dokumenter tilgang i miljøets tilgangsregister]
     H --> I[Deploy markedsplass med Flyway-migreringer]
-    I --> J[Verifiser offentlig katalog, OIDC-login og /admin]
-    J --> K{ADMIN har tilgang og SELLER mangler /admin?}
+    I --> J[Verifiser offentlig katalog, OIDC-login og /app/admin]
+    J --> K{ADMIN har tilgang og SELLER mangler /app/admin?}
     K -- Nei --> L[Stopp utrulling og korriger autorisasjon]
     K -- Ja --> M[Miljø klart for selgersøknader]
 ```
@@ -219,13 +219,13 @@ flowchart TD
     G --> H[Fullfør Keycloak-profil hvis påkrevd]
     H --> I[Send søknad og se PENDING]
     I --> J[Logg ut]
-    J --> K[Logg inn som admin-demo på /admin]
+    J --> K[Logg inn som admin-demo på /app/admin]
     K --> L[Godkjenn søknaden]
     L --> M{Keycloak tildeler SELLER?}
     M -- Nei --> N[Vis driftsmelding og behold PENDING]
     M -- Ja --> O[Auditlogg lagres]
     O --> P[Logg ut og inn igjen som buyer-demo]
     P --> Q[Åpne /app som SELLER]
-    C -- seller-demo på /admin --> R[Vis 403-side]
+    C -- seller-demo på /app/admin --> R[Vis 403-side]
     H -- Innlogging avbrutt --> S[Vis innloggingsfeil med nytt forsøk]
 ```
