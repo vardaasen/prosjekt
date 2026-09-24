@@ -31,15 +31,18 @@ Sist oppdatert: 2026-09-24
 - Lagt til lokal PostgreSQL 17-tjeneste i Docker Compose; den samme
   Flyway-migreringsrekken brukes lokalt, i integrasjonstester og senere mot
   Aiven.
+- Etablert lokal Keycloak-baseret OIDC-innlogging for `/app` med Authorization
+  Code og PKCE. `SELLER`, `BUYER` og `ADMIN` er Keycloak realm-roller; `/app`
+  krever `SELLER`.
 
 ## Nåværende arkitektur
 
 | Flate | Teknologi | Status |
 | --- | --- | --- |
 | Offentlig lesing og SEO | Spring MVC + Thymeleaf | Prototype fungerer |
-| Innlogget appflate | Vaadin Flow under `/app` | Minimal startflate |
+| Innlogget appflate | Vaadin Flow + Keycloak OIDC under `/app` | Krever `SELLER`; minimal startflate |
 | Data | PostgreSQL + Flyway + JPA Data Mapper | Aktiv katalogadapter; in-memory-adapter beholdes for enhetstester |
-| Identitet og tilgang | Ikke implementert | Må avklares før selgerfunksjoner |
+| Identitet og tilgang | Keycloak OIDC + Spring Security | Lokal demo-realm; produksjonskonfigurasjon gjenstår |
 | Designkilde | Eksisterende designmanual + mockups | Figma-designsystem skal formaliseres |
 
 ## Kvalitetssignal
@@ -64,15 +67,14 @@ Sist oppdatert: 2026-09-24
 2. Opprett Figma-artefakt for offentlig katalog, annonsedetalj og
    selgerinngang basert på eksisterende designmanual.
 3. Implementer identitet, tilgangskontroll og sikker selgerflyt under `/app`
-   først etter at sikkerhetsbaselinen er gjennomgått.
+   med eierskapskontroll for hver muterende operasjon.
 4. Koble kontaktforespørsel fra offentlig annonsedetalj til autentisert eller
    eksplisitt gjesteprosess.
 
 ## Neste naturlige steg
 
-Neste funksjonelle steg er en autentisert selgerflyt for å opprette og
-administrere annonser. `DRAFT`/`PUBLISHED`/`ARCHIVED` er nå en del av domenet:
-bare publiserte annonser er synlige i katalog, annonsedetalj og sitemap. Dette
-gjør SEO, 404, tilgangskontroll og senere selgerflyt deterministisk. Før
-selve selgerflyten bygges, må sikkerhetsbaselinen i
-`docs/security-baseline.md` være gjennomgått.
+Neste funksjonelle steg er `SellerAccount`: en kobling mellom OIDC-subject
+(`sub`) og domenets `Seller`, før selgere kan opprette eller endre egne
+annonser. `DRAFT`/`PUBLISHED`/`ARCHIVED` er en del av domenet: bare publiserte
+annonser er synlige i katalog, annonsedetalj og sitemap. Dette gjør SEO, 404,
+tilgangskontroll og senere selgerflyt deterministisk.

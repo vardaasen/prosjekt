@@ -21,6 +21,8 @@
         <java.version>24</java.version>
         <vaadin.version>25.2.8</vaadin.version>
         <log4j2.version>2.25.5</log4j2.version>
+        <tomcat.version>11.0.25</tomcat.version>
+        <spring-expression>7.0.9</spring-expression>
         <testcontainers.version>2.0.1</testcontainers.version>
     </properties>
 
@@ -60,6 +62,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

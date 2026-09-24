@@ -4,6 +4,12 @@ Dette er en prototype-baseline, ikke en full sikkerhetssertifisering. Punktene s
 
 ## Gjennomgått nå
 
+- **Identitet:** Lokal utvikling bruker Keycloak som en separat OIDC-leverandør.
+  Markedsplass-appen lagrer ikke passord og bruker Authorization Code med PKCE
+  for innlogging under `/app`.
+- **Tilgang:** `/app` krever Keycloak-rollen `SELLER`; alle offentlige SEO-ruter
+  forblir anonyme. Keycloak realm-roller mappes eksplisitt til Spring
+  authorities med `ROLE_`-prefiks.
 - **Server-rendering:** Offentlige sider rendres på serveren; ingen brukerinput settes inn som rå HTML.
 - **Thymeleaf escaping:** Tekst fra listingdata går via `th:text`, som reduserer XSS-risiko.
 - **Inputkontroll:** `tilstand` avvises med `400` når verdien ikke er en kjent enum.
@@ -26,7 +32,9 @@ Dette er en prototype-baseline, ikke en full sikkerhetssertifisering. Punktene s
 
 ### 2. Identitet og tilgang
 
-- Velg autentiseringsmodell før selgerfunksjoner: OIDC/ekstern identitetsleverandør eller Spring Security-basert lokal modell.
+- Keycloak er valgt som OIDC-leverandør. Lokal Compose-konfigurasjon bruker
+  demo-realm og demo-brukere bare for utvikling; produksjon må bruke en
+  separat realm, registrert klient, hemmelighetsforvaltning og administratorkonto.
 - Håndhev autorisasjon server-side på hver selgeroperasjon; skjult navigasjon er ikke tilgangskontroll.
 - Skill roller for kjøper, selger og administrasjon.
 - Beskytt state-changing requests med CSRF og sikre session cookies (`Secure`, `HttpOnly`, passende `SameSite`).
@@ -53,7 +61,7 @@ Dette er en prototype-baseline, ikke en full sikkerhetssertifisering. Punktene s
 | Prioritet | Tiltak | Når |
 | --- | --- | --- |
 | Høy | Konfigurert base-URL og trusted proxy-oppsett | Før sitemap/canonical går til staging |
-| Høy | Spring Security, identitet, roller, CSRF og session-policy | Før `/app` får muterende funksjoner |
+| Høy | Autorisasjon for hver selgeroperasjon, CSRF og session-policy | Før `/app` får muterende funksjoner |
 | Høy | Persistens med publiseringsstatus og server-side autorisasjon | Før selgerflyt |
 | Medium | Inputgrenser, rate limiting og auditlogg | Før ekstern testbruk |
 | Medium | Opplastingssikkerhet | Før bilder/dokumenter |

@@ -1,0 +1,74 @@
+{
+  "realm": "havbruksbrukt",
+  "enabled": true,
+  "displayName": "Havbruksbrukt",
+  "roles": {
+    "realm": [
+      {
+        "name": "SELLER",
+        "description": "Can manage the seller workspace."
+      },
+      {
+        "name": "BUYER",
+        "description": "Can use buyer-only functionality when introduced."
+      },
+      {
+        "name": "ADMIN",
+        "description": "Can administer the marketplace when introduced."
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "marketplace",
+      "name": "Havbruksbrukt marketplace",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": [
+        "http://localhost:8080/login/oauth2/code/keycloak"
+      ],
+      "webOrigins": [
+        "http://localhost:8080"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:8080/*"
+      }
+    }
+  ],
+  "users": [
+    {
+      "username": "seller-demo",
+      "enabled": true,
+      "emailVerified": true,
+      "realmRoles": [
+        "SELLER"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "seller-demo-password",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "buyer-demo",
+      "enabled": true,
+      "emailVerified": true,
+      "realmRoles": [
+        "BUYER"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "buyer-demo-password",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}

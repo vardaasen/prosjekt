@@ -17,6 +17,7 @@ import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(classes = ProsjektApplication.class)
@@ -91,5 +92,12 @@ class PublicMarketplaceControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Fant ikke annonsen")))
                 .andExpect(content().string(containsString("href=\"/utstyr\"")));
+    }
+
+    @Test
+    void redirectsAnonymousSellerWorkspaceRequestsToKeycloak() throws Exception {
+        mockMvc.perform(get("/app"))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("/oauth2/authorization/keycloak"));
     }
 }
