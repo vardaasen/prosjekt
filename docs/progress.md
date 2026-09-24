@@ -1,6 +1,6 @@
 # Progresjon
 
-Sist oppdatert: 2026-09-23
+Sist oppdatert: 2026-09-24
 
 ## Levert
 
@@ -26,6 +26,11 @@ Sist oppdatert: 2026-09-23
   dependency-overstyring.
 - Valgt domeneobjekter uten JPA-annotasjoner og Data Mapper ved en kommende
   PostgreSQL/JPA-adapter.
+- Implementert PostgreSQL/JPA-adapteren for katalog-seamen med Flyway som
+  eneste skjemaeier og Testcontainers-integrasjonstester.
+- Lagt til lokal PostgreSQL 17-tjeneste i Docker Compose; den samme
+  Flyway-migreringsrekken brukes lokalt, i integrasjonstester og senere mot
+  Aiven.
 
 ## Nåværende arkitektur
 
@@ -33,13 +38,16 @@ Sist oppdatert: 2026-09-23
 | --- | --- | --- |
 | Offentlig lesing og SEO | Spring MVC + Thymeleaf | Prototype fungerer |
 | Innlogget appflate | Vaadin Flow under `/app` | Minimal startflate |
-| Data | In-memory katalogadapter | PostgreSQL/JPA-adapter er neste skive |
+| Data | PostgreSQL + Flyway + JPA Data Mapper | Aktiv katalogadapter; in-memory-adapter beholdes for enhetstester |
 | Identitet og tilgang | Ikke implementert | Må avklares før selgerfunksjoner |
 | Designkilde | Eksisterende designmanual + mockups | Figma-designsystem skal formaliseres |
 
 ## Kvalitetssignal
 
-- `./mvnw -q test` passerer.
+- `./mvnw verify` passerer med PostgreSQL 17 i Testcontainers.
+- Flyway migrerer `listing`-katalogen før Hibernate validerer skjemaet.
+- JPA-entiteter og Spring Data-repository er avgrenset til persistence-adapteren;
+  web- og domenelag bruker fortsatt bare domenemodellen og katalog-seamen.
 - Offentlige SEO-responser verifiseres gjennom MockMvc, ikke bare visuell rendering.
 - Ingen kommersielle Vaadin-avhengigheter eller eksterne SEO-tjenester er lagt til.
 - Canonical- og sitemap-URL-er er beskyttet mot Host-header-forgiftning via konfigurert `APP_PUBLIC_BASE_URL`.
@@ -51,22 +59,20 @@ Sist oppdatert: 2026-09-23
 
 ## Før neste funksjonelle milepæl
 
-1. Implementer PostgreSQL/JPA-adapter for katalog-seamen med Flyway-migrering
-   og Testcontainers-baserte integrasjonstester.
-2. La offentlig katalog, annonsedetalj og sitemap bare bruke
+1. La offentlig katalog, annonsedetalj og sitemap bare bruke
    `PUBLISHED`-annonser; utkast og arkiverte annonser skal gi 404 offentlig.
-3. Opprett Figma-artefakt for offentlig katalog, annonsedetalj og
+2. Opprett Figma-artefakt for offentlig katalog, annonsedetalj og
    selgerinngang basert på eksisterende designmanual.
-4. Implementer identitet, tilgangskontroll og sikker selgerflyt under `/app`
+3. Implementer identitet, tilgangskontroll og sikker selgerflyt under `/app`
    først etter at sikkerhetsbaselinen er gjennomgått.
-5. Koble kontaktforespørsel fra offentlig annonsedetalj til autentisert eller
+4. Koble kontaktforespørsel fra offentlig annonsedetalj til autentisert eller
    eksplisitt gjesteprosess.
 
 ## Neste naturlige steg
 
-Neste tekniske steg er å innføre PostgreSQL/JPA-adapteren for den eksisterende
-katalog-seamen, med Flyway og Testcontainers. `DRAFT`/`PUBLISHED`/`ARCHIVED`
-er nå en del av domenet: bare publiserte annonser skal være synlige i katalog,
-annonsedetalj og sitemap. Dette gjør SEO, 404, tilgangskontroll og senere
-selgerflyt deterministisk. Før selve selgerflyten bygges, må
-sikkerhetsbaselinen i `docs/security-baseline.md` være gjennomgått.
+Neste funksjonelle steg er en autentisert selgerflyt for å opprette og
+administrere annonser. `DRAFT`/`PUBLISHED`/`ARCHIVED` er nå en del av domenet:
+bare publiserte annonser er synlige i katalog, annonsedetalj og sitemap. Dette
+gjør SEO, 404, tilgangskontroll og senere selgerflyt deterministisk. Før
+selve selgerflyten bygges, må sikkerhetsbaselinen i
+`docs/security-baseline.md` være gjennomgått.
