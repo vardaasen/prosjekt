@@ -58,6 +58,7 @@ compose_healthy() {
 }
 
 start_compose() {
+    ensure_database_config
     log "Starter PostgreSQL og Keycloak via Compose ..."
     docker compose up -d
 
@@ -134,6 +135,32 @@ kjør 'scripts/demo.sh wipe && scripts/demo.sh up' for å importere realmet på 
     log "Synkroniserte hemmeligheten til marketplace-provisioner fra Keycloak til .env."
 }
 
+ensure_database_config() {
+    # Ensure .env exists with database configuration for local development.
+    # These values match the default docker compose configuration.
+    (umask 077 && touch .env)
+    
+    # Only set if not already present
+    if ! grep -q '^DATABASE_URL=' .env 2>/dev/null; then
+        set_env_value DATABASE_URL "jdbc:postgresql://localhost:5432/havbruksbrukt"
+    fi
+    if ! grep -q '^DATABASE_USERNAME=' .env 2>/dev/null; then
+        set_env_value DATABASE_USERNAME "havbruksbrukt"
+    fi
+    if ! grep -q '^DATABASE_PASSWORD=' .env 2>/dev/null; then
+        set_env_value DATABASE_PASSWORD "havbruksbrukt"
+    fi
+    if ! grep -q '^POSTGRES_DB=' .env 2>/dev/null; then
+        set_env_value POSTGRES_DB "havbruksbrukt"
+    fi
+    if ! grep -q '^POSTGRES_USER=' .env 2>/dev/null; then
+        set_env_value POSTGRES_USER "havbruksbrukt"
+    fi
+    if ! grep -q '^POSTGRES_PASSWORD=' .env 2>/dev/null; then
+        set_env_value POSTGRES_PASSWORD "havbruksbrukt"
+    fi
+}
+
 set_env_value() {
     local key="$1" value="$2" tmp
     tmp="$(mktemp "$RUN_DIR/env.XXXXXX")"
@@ -159,6 +186,7 @@ Bruk 'scripts/demo.sh restart' for full kontroll neste gang."
         return 0
     fi
 
+    ensure_database_config
     sync_provisioner_secret
 
     if [[ -f .env ]]; then
@@ -166,10 +194,10 @@ Bruk 'scripts/demo.sh restart' for full kontroll neste gang."
         # shellcheck disable=SC1091
         source .env
         set +a
-        log "Lastet .env (Keycloak service-konto for rolletildeling)."
+        log "Lastet .env (database og Keycloak service-konto)."
     else
-        warn ".env finnes ikke. Appen starter uten Keycloak Admin API; \
-godkjenning av selgersøknader vil stoppe med en synlig feil."
+        warn ".env finnes ikke. Appen vil feile uten DATABASE_* miljøvariabler."
+        return 1
     fi
 
     log "Bygger og starter appen (logg: $LOG_FILE) ..."
