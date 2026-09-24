@@ -1,17 +1,29 @@
 # Lokal utvikling
 
-## Markedsplass med Keycloak
+## Demo-livssyklus (anbefalt)
 
-Start lokal PostgreSQL og Keycloak:
+Bruk `scripts/demo.sh` for å starte og stoppe hele demoen deklarativt.
+Skriptet venter på at PostgreSQL og Keycloak faktisk er healthy før appen
+startes, og garanterer at Flyway kjører mot riktig database ved restart —
+dette unngår "run i sirkler"-feilsøking.
+
+```bash
+scripts/demo.sh up        # start Compose + app, vent til alt svarer
+scripts/demo.sh status    # se nåværende tilstand (Compose/Keycloak/app)
+scripts/demo.sh logs      # følg app-loggen
+scripts/demo.sh restart   # garantert ren restart (fikser "tom database"-feilen)
+scripts/demo.sh down      # stopp app + Compose, behold data
+scripts/demo.sh wipe      # stopp alt og slett Compose-volumer (nullstill demo)
+```
+
+`up` er idempotent: kjør den trygt flere ganger. Den leser `.env` automatisk
+hvis filen finnes (Keycloak service-konto), og advarer tydelig hvis den
+mangler i stedet for å feile stille.
+
+Manuell fremgangsmåte (samme steg som skriptet automatiserer):
 
 ```bash
 docker compose up -d
-```
-
-Vent til Keycloak er klar på `http://localhost:8180`, og start deretter
-markedsplassen:
-
-```bash
 ./mvnw spring-boot:run
 ```
 
@@ -83,15 +95,9 @@ stabile bruker-ID, og tildeler bare `SELLER`. Den oppretter aldri `ADMIN`.
 ### Lokal ende-til-ende-test
 
 Den lokale service-kontoen konfigureres med en tilfeldig klienthemmelighet.
-Lagre den bare i den git-ignorerte `.env`-filen med eiertilgang, og start
-applikasjonen med den lastet inn:
-
-```bash
-set -a
-source .env
-set +a
-./mvnw spring-boot:run
-```
+Lagre den bare i den git-ignorerte `.env`-filen med eiertilgang. `scripts/demo.sh up`
+leser den automatisk; restart appen med `scripts/demo.sh restart` etter at
+`.env` er oppdatert.
 
 Etter restart kan `buyer-demo` sende en søknad og `admin-demo` godkjenne den.
 Logg deretter ut og inn igjen som samme identitet for at den nye
@@ -113,8 +119,8 @@ opprettes manuelt etter Keycloak-deploy og før markedsplassen eksponeres for
 registrering; applikasjonen skal aldri opprette eller tildele `ADMIN` ved
 oppstart.
 
-Stopp lokale containere uten å slette data:
+Stopp lokal demo uten å slette data:
 
 ```bash
-docker compose down
+scripts/demo.sh down
 ```

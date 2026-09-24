@@ -22,3 +22,6 @@ src/main/bundles/
 .env
 .env.*
 application-local.properties
+
+# Local demo lifecycle (PID file, app log)
+.demo/
