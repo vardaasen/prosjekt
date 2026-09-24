@@ -12,6 +12,8 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
+import com.vaadin.flow.shared.ApplicationConstants;
+
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -25,6 +27,15 @@ class SecurityConfiguration {
             HttpSecurity http,
             GrantedAuthoritiesMapper keycloakRoleMapper) throws Exception {
         http
+                // Vaadin er kartlagt på servlet-roten (vaadin.url-mapping="/*", standard),
+                // så rammeverkets interne init/uidl/heartbeat-forespørsler (markert med
+                // spørreparameteren "v-r") sendes uten CSRF-token slik Vaadins klient selv
+                // håndterer det internt. Uten dette unntaket blokkerer Spring Securitys
+                // CSRF-filter disse forespørslene før de når kontrolleren, som viste seg
+                // som en evig "Connection lost"-reconnect-løkke etter innlogging på
+                // /admin og /app. Se docs/local-development.md.
+                .csrf(csrf -> csrf.ignoringRequestMatchers(request ->
+                        request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER) != null))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/app", "/app/**").hasRole("SELLER")
                         .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
