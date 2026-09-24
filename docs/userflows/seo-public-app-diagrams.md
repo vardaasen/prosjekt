@@ -26,6 +26,7 @@ beskriver et bredere målbilde enn den implementerte prototypen.
 | 7. Administrator godkjenner selgersøknad | Delvis | Server-rendered `/selgersoknad`, vedvarende `PENDING`-søknad, `/app/admin`, auditlogg, aktivering av selgerkonto, administratorutlogging og testet Keycloak Admin API-adapter | E-postverifisert selvregistrering, rate limiting og per-miljø service-konto/hemmelighet |
 | 8. Operatør installerer og bootstrapper miljø | Delvis | Lokal Compose, realm-import og beskyttet `/app/admin` | Produksjonsrunbook, hemmelighetsforvaltning og tilgangsregister |
 | 9. Lokal demo og rollebytte | Ferdig for lokal demo | Demo-identiteter, Keycloak-profil, søknad, godkjenning, reinnlogging og 403-/innloggingsfeil | Selvregistrering og produksjonsidentiteter |
+| 10. Navigasjon, innlogging og utlogging | Besluttet | Logg ut via Keycloak til forsiden | Meny etter innlogging og administratorrolle, Min side, egen appmeny, retur etter innlogging, varsler. Se `navigasjon-og-innlogging.md` |
 
 Diagram 6 dekker den implementerte selgerflyten som ikke fantes da de
 opprinnelige diagrammene ble laget.
@@ -164,6 +165,8 @@ flowchart TD
 ```
 
 ## 7. Administrator godkjenner selgersøknad
+
+Viser dagens implementasjon. **Erstattet av beslutningsnotat 0007:** selgersøknad og varig `SELLER`-rolle fases ut til fordel for verifisert tilknytning, annonsegodkjenning og handelsverifisering. Ny flyt tegnes når migreringen planlegges.
 
 ```mermaid
 flowchart TD

@@ -1,42 +1,55 @@
 # Havbruksbrukt
 
 Havbruksbrukt er en B2B-markedsplass for brukt akvakulturutstyr. Konteksten
-beskriver virksomhetenes publisering, oppdagelse og vurdering av utstyr; den
-omfatter ikke selve kjøpsoppgjøret.
+beskriver hvordan virksomheter publiserer, oppdager og handler utstyr, og
+hvordan markedsplassen verifiserer partene og handelen. Selve betalingen
+skjer utenfor markedsplassen.
 
-## Markedsplass
+## Parter og verifisering
 
-**Annonse**:
-En offentlig presentasjon av ett konkret tilbud om brukt utstyr, med
-utstyrsopplysninger, pris, lokasjon, tilstand, selger og dokumentasjon.
-_Avoid_: Produkt, oppføring, listing
+**Person**:
+Et menneske som logger inn på markedsplassen. En person handler aldri på egne
+vegne, bare for en virksomhet gjennom en tilknytning.
+_Avoid_: Bruker, konto, kunde
+
+**Virksomhet**:
+Den juridiske enheten som er part i en annonse, et bud og en handel,
+identifisert med organisasjonsnummer.
+_Avoid_: Firma, organisasjon, selskap, kunde
+
+**Tilknytning**:
+Koblingen som lar en person handle på vegne av en virksomhet. En person kan ha
+tilknytninger til flere virksomheter.
+_Avoid_: Medlemskap, ansettelse, rolle
+
+**Verifisert tilknytning**:
+En tilknytning som markedsplassadministratoren har kontrollert og som ikke er
+trukket tilbake. Verifisering gjelder tilknytningen, ikke personen alene, og
+er ikke varig i seg selv.
+_Avoid_: Verifisert selger, godkjent bruker, sertifisert konto
 
 **Selger**:
-Virksomheten som tilbyr utstyr gjennom en annonse.
-_Avoid_: Leverandør, eier
+Virksomheten som tilbyr utstyr i en bestemt annonse. En rolle i en annonse
+eller handel, ikke en kontotype.
+_Avoid_: Leverandør, eier, selgerkonto
 
-**Selgerkonto**:
-Koblingen mellom en innlogget OIDC-identitets stabile subject (`sub`) og en
-selger. Kontoen eier fremtidige utkast og annonser; den inneholder ikke
-passord eller andre identitetsleverandørdata.
-_Avoid_: Brukerkonto, Keycloak-bruker
-
-**Selgersøknad**:
-En virksomhets forespørsel om å bli selger. Søknaden venter på
-markedsplassadministratorens vurdering og gir ikke publiseringsrettigheter
-før den er godkjent.
-_Avoid_: Selvregistrert selger, automatisk godkjenning
+**Kjøper**:
+Virksomheten som gir bud på en bestemt annonse. En rolle i et bud eller en
+handel, ikke en kontotype.
+_Avoid_: Kunde, bruker
 
 **Markedsplassadministrator**:
-En autorisert markedsplassbruker som vurderer selgersøknader og håndhever
-forretningsmessige regler. Rollen er forskjellig fra en
+En autorisert person som verifiserer tilknytninger, godkjenner annonser og
+verifiserer handler. Rollen er forskjellig fra en
 Keycloak-plattformadministrator.
 _Avoid_: Keycloak-admin, superbruker
 
-**Kjøper**:
-Virksomheten som vurderer utstyr i markedsplassen, uavhengig av om den ender
-med å kjøpe.
-_Avoid_: Kunde, bruker
+## Annonser
+
+**Annonse**:
+En presentasjon av ett konkret tilbud om brukt utstyr, med
+utstyrsopplysninger, pris, lokasjon, tilstand, selger og dokumentasjon.
+_Avoid_: Produkt, oppføring, listing
 
 **Utstyr**:
 Det fysiske akvakulturutstyret som tilbys i en annonse.
@@ -55,29 +68,55 @@ _Avoid_: Adresse, region
 Selgers oppgitte vurdering av utstyrets stand ved publisering.
 _Avoid_: Kvalitet, status
 
-**Publiseringsstatus**:
-Annonsens livssyklus i markedsplassen: utkast, publisert eller arkivert.
-Bare en publisert annonse er offentlig synlig.
-_Avoid_: Synlighetsstatus, annonsetilstand
-
 **Utkast**:
-En annonse under utarbeidelse. Den eies av én selgerkonto og er bare synlig
-for denne selgeren til den publiseres.
+En annonse under utarbeidelse, eid av en virksomhet og bare synlig for
+personer med tilknytning til den.
 _Avoid_: Kladd, upublisert annonse
 
-## Tillit og dialog
+**Annonsegodkjenning**:
+Markedsplassadministratorens kontroll av en annonse før den blir offentlig.
+Bare en virksomhet med verifisert tilknytning kan sende en annonse til
+godkjenning.
+_Avoid_: Moderering, review
+
+**Publiseringsstatus**:
+Annonsens livssyklus: utkast, til godkjenning, publisert eller arkivert. Bare
+en publisert annonse er offentlig synlig.
+_Avoid_: Synlighetsstatus, annonsetilstand
 
 **Dokumentasjon**:
 Materiale knyttet til en annonse som underbygger utstyrets tilstand, historikk
 eller regelverksetterlevelse.
 _Avoid_: Vedlegg, bevis
 
-**Verifisert selger**:
-En selger som markedsplassen har merket som kontrollert. Merket uttrykker
-selgerens verifiseringsstatus, ikke tilstanden til utstyret.
-_Avoid_: Godkjent annonse, sertifisert utstyr
+## Handel og dialog
 
 **Forespørsel**:
-En kjøpers henvendelse til en selger om en bestemt annonse. Forespørsler
-håndteres i den innloggede appflaten når denne flyten innføres.
+En henvendelse fra en virksomhet til selgeren om en bestemt annonse, uten
+forpliktelse.
 _Avoid_: Bestilling, kjøp, melding
+
+**Bud**:
+Et tilbud fra en kjøper om å kjøpe utstyret i en annonse til en bestemt pris.
+Et bud kan gis før kjøperens tilknytning er verifisert.
+_Avoid_: Tilbud, bestilling, ordre
+
+**Handel**:
+Avtalen som oppstår når selgeren aksepterer et bud. En handel er ikke
+gjennomført før markedsplassadministratoren har verifisert den.
+_Avoid_: Salg, ordre, transaksjon, kjøpsoppgjør
+
+**Handelsverifisering**:
+Markedsplassadministratorens kontroll av en handel: at begge parter har
+verifisert tilknytning og at annonse og bud stemmer. Betalingen skjer utenfor
+markedsplassen.
+_Avoid_: Betalingsgodkjenning, oppgjør
+
+## Utgående begreper
+
+Brukes fortsatt i koden inntil den er migrert (se beslutningsnotat 0007), men
+skal ikke brukes i nytt arbeid:
+
+- **Selgersøknad** erstattes av tilknytning og annonsegodkjenning.
+- **Selgerkonto** erstattes av tilknytning mellom person og virksomhet.
+- **Verifisert selger** erstattes av verifisert tilknytning.

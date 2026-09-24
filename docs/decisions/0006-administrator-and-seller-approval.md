@@ -2,8 +2,9 @@
 
 ## Status
 
-Akseptert som sikkerhetsgrense før selvbetjent registrering eller
-administratorflate implementeres.
+Delvis erstattet av 0007 (2026-09-24). Selgersøknad og varig `SELLER`-rolle
+gjelder ikke lenger; skillet mellom Keycloak-plattformadministrator og
+markedsplassadministrator gjelder fortsatt.
 
 ## Problem
 
