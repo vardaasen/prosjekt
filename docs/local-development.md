@@ -78,6 +78,24 @@ export KEYCLOAK_ADMIN_CLIENT_SECRET='fra-hemmelighetsforvaltning'
 Adapteren bruker client-credentials, slår opp OIDC-subject som Keycloaks
 stabile bruker-ID, og tildeler bare `SELLER`. Den oppretter aldri `ADMIN`.
 
+### Lokal ende-til-ende-test
+
+Den lokale service-kontoen konfigureres med en tilfeldig klienthemmelighet.
+Lagre den bare i den git-ignorerte `.env`-filen med eiertilgang, og start
+applikasjonen med den lastet inn:
+
+```bash
+set -a
+source .env
+set +a
+./mvnw spring-boot:run
+```
+
+Etter restart kan `buyer-demo` sende en søknad og `admin-demo` godkjenne den.
+Logg deretter ut og inn igjen som samme identitet for at den nye
+`SELLER`-rollen skal være med i OIDC-sesjonen. Ikke legg `.env` eller
+klienthemmeligheten i repository.
+
 ## Produksjonsgrenser
 
 Compose-filen kjører Keycloak med `start-dev` og en lokal, ukryptert
