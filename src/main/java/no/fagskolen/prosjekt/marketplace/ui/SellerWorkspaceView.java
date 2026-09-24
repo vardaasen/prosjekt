@@ -4,6 +4,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -105,6 +106,7 @@ public class SellerWorkspaceView extends VerticalLayout {
         setPadding(true);
         add(
                 new H1("Selgerområde"),
+                new Anchor("/logout", "Logg ut"),
                 new Paragraph("Innlogget som " + sellerAccount.seller().name() + "."),
                 new Paragraph("Opprett utkast. De er bare synlige for denne selgerkontoen."),
                 draftForm,
