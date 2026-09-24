@@ -102,11 +102,15 @@ public class SellerWorkspaceView extends VerticalLayout {
         })).setHeader("Handling");
         drafts.setItems(sellerListingDrafts.findDrafts(sellerAccount));
 
+        var logout = new Anchor("/logout", "Logg ut");
+        // Se AdminWorkspaceView for hvorfor router-ignore trengs her.
+        logout.getElement().setAttribute("router-ignore", "");
+
         setSpacing(true);
         setPadding(true);
         add(
                 new H1("Selgerområde"),
-                new Anchor("/logout", "Logg ut"),
+                logout,
                 new Paragraph("Innlogget som " + sellerAccount.seller().name() + "."),
                 new Paragraph("Opprett utkast. De er bare synlige for denne selgerkontoen."),
                 draftForm,

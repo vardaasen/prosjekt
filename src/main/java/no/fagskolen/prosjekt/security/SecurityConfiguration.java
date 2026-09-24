@@ -8,8 +8,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
+import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -25,7 +28,8 @@ class SecurityConfiguration {
     @Bean
     SecurityFilterChain securityFilterChain(
             HttpSecurity http,
-            GrantedAuthoritiesMapper keycloakRoleMapper) throws Exception {
+            GrantedAuthoritiesMapper keycloakRoleMapper,
+            ClientRegistrationRepository clientRegistrationRepository) throws Exception {
         http
                 // Vaadin er kartlagt på servlet-roten (vaadin.url-mapping="/*", standard),
                 // så rammeverkets interne init/uidl/heartbeat-forespørsler (markert med
@@ -54,8 +58,20 @@ class SecurityConfiguration {
                         // GET er ikke CSRF-beskyttet i utgangspunktet, så dette holder
                         // utloggingen konsistent på tvers av begge UI-lagene i demoen.
                         .logoutRequestMatcher(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/logout"))
-                        .logoutSuccessUrl("/"));
+                        // Uten RP-initiated logout mot Keycloak overlever Keycloaks
+                        // egen SSO-økt selv om den lokale Spring-økten avsluttes: neste
+                        // innlogging (f.eks. som en annen demobruker) hopper stille over
+                        // Keycloaks innloggingsskjema og gjenbruker forrige identitet.
+                        // oidcLogoutSuccessHandler sender brukeren via Keycloaks
+                        // end_session_endpoint slik at også SSO-økten avsluttes.
+                        .logoutSuccessHandler(oidcLogoutSuccessHandler(clientRegistrationRepository)));
         return http.build();
+    }
+
+    private LogoutSuccessHandler oidcLogoutSuccessHandler(ClientRegistrationRepository clientRegistrationRepository) {
+        var handler = new OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository);
+        handler.setPostLogoutRedirectUri("{baseUrl}/");
+        return handler;
     }
 
     @Bean

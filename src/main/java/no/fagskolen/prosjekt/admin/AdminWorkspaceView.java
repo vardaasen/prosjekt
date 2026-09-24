@@ -48,11 +48,18 @@ public class AdminWorkspaceView extends VerticalLayout {
                 .setHeader("Revisjonsspor");
         refresh(pendingApplications, sellerApplications);
 
+        var logout = new Anchor("/logout", "Logg ut");
+        // Vaadin sitt klientsideruter fanger opp alle anker-klikk og prøver å
+        // navigere til dem som en Vaadin-rute ("Could not navigate to
+        // 'logout'"). router-ignore ber ruteren la nettleseren gjøre en vanlig
+        // full sideinnlasting til /logout i stedet.
+        logout.getElement().setAttribute("router-ignore", "");
+
         setSpacing(true);
         setPadding(true);
         add(
                 new H1("Administrasjon"),
-                new Anchor("/logout", "Logg ut"),
+                logout,
                 new Paragraph("Vurder selgersøknader. Godkjenning tildeler ikke rettigheter før Keycloak har bekreftet SELLER-rollen."),
                 new Paragraph("Ventende selgersøknader"),
                 pendingApplications);
