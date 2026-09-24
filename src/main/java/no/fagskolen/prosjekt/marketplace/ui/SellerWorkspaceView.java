@@ -2,6 +2,7 @@ package no.fagskolen.prosjekt.marketplace.ui;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Paragraph;
@@ -17,6 +18,7 @@ import no.fagskolen.prosjekt.marketplace.domain.ListingCondition;
 import no.fagskolen.prosjekt.marketplace.domain.SellerAccount;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.BigDecimalField;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -52,6 +54,15 @@ public class SellerWorkspaceView extends VerticalLayout {
         var price = new BigDecimalField("Pris i NOK");
         price.setValue(java.math.BigDecimal.ZERO);
         var summary = new TextArea("Beskrivelse");
+        var draftForm = new FormLayout();
+        draftForm.setAutoResponsive(true);
+        draftForm.setColumnWidth("18rem");
+        draftForm.setExpandColumns(true);
+        draftForm.setExpandFields(true);
+        draftForm.addFormRow(slug, title);
+        draftForm.addFormRow(location, condition);
+        draftForm.addFormRow(category, price);
+        draftForm.addFormRow(summary);
 
         var createDraft = new Button("Opprett utkast", event -> {
             try {
@@ -75,6 +86,17 @@ public class SellerWorkspaceView extends VerticalLayout {
                 Notification.show(exception.getMessage());
             }
         });
+        drafts.addComponentColumn(listing -> new Button("Publiser", event -> {
+            try {
+                sellerListingDrafts.publishDraft(sellerAccount, listing.slug());
+                drafts.setItems(sellerListingDrafts.findDrafts(sellerAccount));
+                Notification.show("Annonsen er publisert.");
+            } catch (IllegalArgumentException exception) {
+                Notification.show(exception.getMessage());
+            } catch (ObjectOptimisticLockingFailureException exception) {
+                Notification.show("Annonsen ble endret i en annen økt. Last siden på nytt og prøv igjen.");
+            }
+        })).setHeader("Handling");
         drafts.setItems(sellerListingDrafts.findDrafts(sellerAccount));
 
         setSpacing(true);
@@ -83,13 +105,7 @@ public class SellerWorkspaceView extends VerticalLayout {
                 new H1("Selgerområde"),
                 new Paragraph("Innlogget som " + sellerAccount.seller().name() + "."),
                 new Paragraph("Opprett utkast. De er bare synlige for denne selgerkontoen."),
-                slug,
-                title,
-                location,
-                condition,
-                category,
-                price,
-                summary,
+                draftForm,
                 createDraft,
                 new Paragraph("Mine utkast"),
                 drafts);

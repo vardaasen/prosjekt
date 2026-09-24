@@ -5,6 +5,7 @@ import no.fagskolen.prosjekt.marketplace.drafts.ListingDraft;
 import no.fagskolen.prosjekt.marketplace.drafts.SellerListingDrafts;
 import no.fagskolen.prosjekt.marketplace.domain.EquipmentCategory;
 import no.fagskolen.prosjekt.marketplace.domain.ListingCondition;
+import no.fagskolen.prosjekt.marketplace.catalogue.PublishedListingCatalogue;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,6 +33,9 @@ class JpaSellerListingDraftsTest {
     @Autowired
     private SellerListingDrafts sellerListingDrafts;
 
+    @Autowired
+    private PublishedListingCatalogue publishedListings;
+
     @Test
     void createsDraftsForTheirRegisteredSellerOnly() {
         var firstSeller = sellerAccounts.registerSellerAccount("owner-alpha", "Fjord Drift AS");
@@ -56,6 +60,26 @@ class JpaSellerListingDraftsTest {
         assertThatThrownBy(() -> sellerListingDrafts.createDraft(secondSeller, draft("shared-slug")))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("A listing with this slug already exists");
+    }
+
+    @Test
+    void publishesOnlyTheOwnersDraftToThePublicCatalogue() {
+        var owner = sellerAccounts.registerSellerAccount("owner-epsilon", "Fjord Drift AS");
+        var otherSeller = sellerAccounts.registerSellerAccount("owner-zeta", "Kystbruket SA");
+        sellerListingDrafts.createDraft(owner, draft("publiserbar-pumpe"));
+
+        assertThat(publishedListings.findPublishedBySlug("publiserbar-pumpe")).isEmpty();
+        assertThatThrownBy(() -> sellerListingDrafts.publishDraft(otherSeller, "publiserbar-pumpe"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Draft is not available for this seller");
+
+        var published = sellerListingDrafts.publishDraft(owner, "publiserbar-pumpe");
+
+        assertThat(published.publicationStatus())
+                .isEqualTo(no.fagskolen.prosjekt.marketplace.domain.ListingPublicationStatus.PUBLISHED);
+        assertThat(publishedListings.findPublishedBySlug("publiserbar-pumpe"))
+                .contains(published);
+        assertThat(sellerListingDrafts.findDrafts(owner)).isEmpty();
     }
 
     private static ListingDraft draft(String slug) {

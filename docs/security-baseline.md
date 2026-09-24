@@ -16,6 +16,10 @@ Dette er en prototype-baseline, ikke en full sikkerhetssertifisering. Punktene s
 - **Utkast:** Nye utkast har en databasefremmednøkkel til eierens
   `SellerAccount`. Søk etter utkast filtreres på den innloggede kontoens
   OIDC-subject, slik at en selger ikke kan se en annens utkast.
+- **Publisering:** En annonse kan bare publiseres når serveren finner den som
+  et `DRAFT` med både slug og den innloggede selgerkontoens OIDC-subject.
+  Optimistisk låsing avviser konkurrerende endringer i stedet for å
+  overskrive dem.
 - **Server-rendering:** Offentlige sider rendres på serveren; ingen brukerinput settes inn som rå HTML.
 - **Thymeleaf escaping:** Tekst fra listingdata går via `th:text`, som reduserer XSS-risiko.
 - **Inputkontroll:** `tilstand` avvises med `400` når verdien ikke er en kjent enum.

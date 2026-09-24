@@ -39,6 +39,9 @@ Sist oppdatert: 2026-09-24
   innlogging som `SELLER` og eier kommende utkast og annonser.
 - Implementert første utkastflyt i selgerområdet. Et utkast er `DRAFT`, får
   eier gjennom `SellerAccount`, og listes bare for den innloggede selgeren.
+- Fullført første selgerflyt fra utkast til publisert annonse. Publisering
+  kontrollerer eierskap på serveren og gjør deretter annonsen synlig i den
+  eksisterende offentlige katalogen, detaljsiden og sitemapet.
 
 ## Nåværende arkitektur
 
@@ -72,15 +75,15 @@ Sist oppdatert: 2026-09-24
    `PUBLISHED`-annonser; utkast og arkiverte annonser skal gi 404 offentlig.
 2. Opprett Figma-artefakt for offentlig katalog, annonsedetalj og
    selgerinngang basert på eksisterende designmanual.
-3. Implementer redigering, publisering og arkivering av egne utkast med
-   server-side eierskapskontroll.
+3. Implementer redigering og arkivering av egne annonser med server-side
+   eierskapskontroll.
 4. Koble kontaktforespørsel fra offentlig annonsedetalj til autentisert eller
    eksplisitt gjesteprosess.
 
 ## Neste naturlige steg
 
-Neste funksjonelle steg er å utvide utkastflyten med redigering, publisering
-og arkivering av **egne** annonser. `SellerAccount` er den persisted eieren,
-og alle muterende operasjoner skal slå opp annonsen med både slug og
-OIDC-subject på serveren. `DRAFT`/`PUBLISHED`/`ARCHIVED` er en del av domenet:
-bare publiserte annonser er synlige i katalog, annonsedetalj og sitemap.
+Neste funksjonelle steg er redigering og arkivering av **egne** annonser.
+`SellerAccount` er den persisted eieren, og alle muterende operasjoner skal
+slå opp annonsen med både slug og OIDC-subject på serveren.
+`DRAFT`/`PUBLISHED`/`ARCHIVED` er en del av domenet: bare publiserte annonser
+er synlige i katalog, annonsedetalj og sitemap.

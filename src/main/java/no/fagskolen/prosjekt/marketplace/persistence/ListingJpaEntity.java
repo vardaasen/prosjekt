@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import no.fagskolen.prosjekt.marketplace.domain.EquipmentCategory;
 import no.fagskolen.prosjekt.marketplace.domain.ListingCondition;
 import no.fagskolen.prosjekt.marketplace.domain.ListingPublicationStatus;
@@ -29,6 +30,9 @@ class ListingJpaEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
+
+    @Version
+    private long version;
 
     @Column(nullable = false, unique = true)
     private String slug;
@@ -197,5 +201,10 @@ class ListingJpaEntity {
 
     Set<String> documentation() {
         return Set.copyOf(documentation);
+    }
+
+    void publish(LocalDate publicationDate) {
+        publicationStatus = ListingPublicationStatus.PUBLISHED;
+        publishedAt = publicationDate;
     }
 }

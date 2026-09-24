@@ -22,7 +22,7 @@ beskriver et bredere målbilde enn den implementerte prototypen.
 | 2. Kjøper finner utstyr fra forsiden | Delvis | Forside, publiserte annonser, katalog, søk og detaljside | Kategorinavigasjon, kjøperkonto, lagring og forespørsel |
 | 3. Browse/filter til listedetalj | Delvis | Katalog, fritekst, lokasjon, tilstand, nulltreff og detaljside | Prisfilter og kategori-URL-er |
 | 4. Listedetalj til forespørsel eller lagring | Delvis | Publisert detaljside med selger- og dokumentasjonsdata | Forespørsel, lagring, kjøperinnlogging og retur-URL |
-| 5. Selger starter fra offentlig side | Delvis | Keycloak-innlogging, `SELLER`-krav på `/app` og privat opprettelse av utkast | `/selg`, bilder, dokumenter, redigering, publisering og arkivering |
+| 5. Selger starter fra offentlig side | Delvis | Keycloak-innlogging, `SELLER`-krav på `/app`, privat opprettelse av utkast og publisering | `/selg`, bilder, dokumenter, redigering og arkivering |
 
 Diagram 6 dekker den implementerte selgerflyten som ikke fantes da de
 opprinnelige diagrammene ble laget.
@@ -153,5 +153,9 @@ flowchart TD
     I --> G
     H -- Ja --> J[Lagre som DRAFT med SellerAccount som eier]
     J --> K[Vis utkast bare for samme SellerAccount]
-    K --> L[Senere: rediger, publiser eller arkiver med eierskapskontroll]
+    K --> L[Velger Publiser]
+    L --> M{Eier fortsatt utkastet?}
+    M -- Nei --> N[Avvis publisering]
+    M -- Ja --> O[Sett PUBLISHED og publiseringsdato]
+    O --> P[Vises i offentlig katalog, detaljside og sitemap]
 ```

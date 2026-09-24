@@ -10,4 +10,8 @@ flowchart TD
     I --> G
     H -- Ja --> J[Lagre som DRAFT med SellerAccount som eier]
     J --> K[Vis utkast bare for samme SellerAccount]
-    K --> L[Senere: rediger, publiser eller arkiver med eierskapskontroll]
+    K --> L[Velger Publiser]
+    L --> M{Eier fortsatt utkastet?}
+    M -- Nei --> N[Avvis publisering]
+    M -- Ja --> O[Sett PUBLISHED og publiseringsdato]
+    O --> P[Vises i offentlig katalog, detaljside og sitemap]

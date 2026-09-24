@@ -66,4 +66,16 @@ class JpaSellerListingDrafts implements SellerListingDrafts {
                 .map(mapper::toDomain)
                 .toList();
     }
+
+    @Override
+    @Transactional
+    public Listing publishDraft(SellerAccount owner, String slug) {
+        var draft = listings.findBySlugAndSellerAccountOidcSubjectAndPublicationStatus(
+                        slug,
+                        owner.oidcSubject(),
+                        ListingPublicationStatus.DRAFT)
+                .orElseThrow(() -> new IllegalArgumentException("Draft is not available for this seller"));
+        draft.publish(LocalDate.now());
+        return mapper.toDomain(draft);
+    }
 }

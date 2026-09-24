@@ -10,4 +10,6 @@ public interface SellerListingDrafts {
     Listing createDraft(SellerAccount owner, ListingDraft draft);
 
     List<Listing> findDrafts(SellerAccount owner);
+
+    Listing publishDraft(SellerAccount owner, String slug);
 }
