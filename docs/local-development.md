@@ -53,6 +53,10 @@ godkjenningsskjermen. Den kan ikke brukes som Keycloak-plattformadministrator.
 inntil en Keycloak service-konto er konfigurert; det hindrer at databasen
 markerer søknaden som godkjent uten at `SELLER` faktisk er tildelt.
 
+Prøv `seller-demo` på `/admin` for å verifisere at manglende administratorrolle
+viser den brukervennlige 403-siden. Ved avbrutt OIDC-innlogging sendes brukeren
+til `/innlogging-feilet`, uten tekniske feildetaljer.
+
 ## Keycloak-rolletildeling per miljø
 
 Før en administrator kan godkjenne søknader i et miljø, må drift opprette en

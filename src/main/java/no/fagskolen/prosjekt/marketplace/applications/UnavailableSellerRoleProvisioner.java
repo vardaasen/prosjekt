@@ -11,8 +11,8 @@ class UnavailableSellerRoleProvisioner {
     @ConditionalOnMissingBean(SellerRoleProvisioner.class)
     SellerRoleProvisioner unavailableSellerRoleProvisionerBean() {
         return oidcSubject -> {
-            throw new IllegalStateException(
-                    "Seller approval requires a configured Keycloak administrator service account.");
+            throw new SellerRoleProvisioningException(
+                    "Rolletildeling er ikke konfigurert. Kontakt driftsansvarlig før søknaden godkjennes.");
         };
     }
 }

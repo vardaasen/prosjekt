@@ -27,10 +27,15 @@ class SecurityConfiguration {
                         .requestMatchers("/app", "/app/**").hasRole("SELLER")
                         .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
                         .requestMatchers("/selgersoknad", "/selgersoknad/**").authenticated()
+                        .requestMatchers("/tilgang-nektet", "/innlogging-feilet").permitAll()
                         .anyRequest().permitAll())
                 .oauth2Login(oauth2 -> oauth2
+                        .failureHandler((request, response, exception) ->
+                                response.sendRedirect("/innlogging-feilet"))
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userAuthoritiesMapper(keycloakRoleMapper)))
+                .exceptionHandling(exceptionHandling -> exceptionHandling
+                        .accessDeniedPage("/tilgang-nektet"))
                 .logout(logout -> logout.logoutSuccessUrl("/"));
         return http.build();
     }

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="no" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${title}">Ingen tilgang</title>
+  <meta name="description" th:content="${description}">
+  <meta name="robots" th:content="${robots}">
+  <link rel="canonical" th:href="${canonicalUrl}">
+  <link rel="stylesheet" href="/styles/site.css">
+</head>
+<body>
+<main class="shell">
+  <p class="eyebrow">403</p>
+  <h1>Du har ikke tilgang til denne siden</h1>
+  <p>Logg inn med en konto som har riktig rolle, eller gå tilbake til markedsplassen.</p>
+  <a class="button" href="/">Til forsiden</a>
+</main>
+</body>
+</html>

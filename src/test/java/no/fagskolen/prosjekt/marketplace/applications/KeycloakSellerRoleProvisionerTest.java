@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class KeycloakSellerRoleProvisionerTest {
 
@@ -49,6 +50,26 @@ class KeycloakSellerRoleProvisionerTest {
                 "GET /admin/realms/havbruksbrukt/users/subject-123 Bearer token",
                 "GET /admin/realms/havbruksbrukt/roles/SELLER Bearer token",
                 "POST /admin/realms/havbruksbrukt/users/user-123/role-mappings/realm Bearer token");
+    }
+
+    @Test
+    void presentsAnOperationalFailureWithoutExposingKeycloakDetails() {
+        server.removeContext("/");
+        server.createContext("/", exchange -> {
+            exchange.sendResponseHeaders(500, -1);
+            exchange.close();
+        });
+        var properties = new KeycloakAdminProperties(
+                true,
+                "http://localhost:" + server.getAddress().getPort(),
+                "havbruksbrukt",
+                "marketplace-provisioner",
+                "not-a-real-secret");
+        var provisioner = new KeycloakSellerRoleProvisioner(properties);
+
+        assertThatThrownBy(() -> provisioner.grantSellerRole("subject-123"))
+                .isInstanceOf(SellerRoleProvisioningException.class)
+                .hasMessage("Kunne ikke tildele selgerrollen akkurat nå. Prøv igjen senere.");
     }
 
     private void respond(HttpExchange exchange) throws IOException {

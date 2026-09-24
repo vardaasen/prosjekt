@@ -31,6 +31,10 @@ Dette er en prototype-baseline, ikke en full sikkerhetssertifisering. Punktene s
   konfigurerbar, minst-privilegert Keycloak service-konto. Uten konfigurert
   adapter eller ved Keycloak-feil avbrytes transaksjonen og søknaden forblir
   `PENDING`; ingen suksess-svar eller kontoaktivering produseres.
+- **Feiltilstander:** Manglende rolle viser en egen 403-side, og mislykket
+  OIDC-innlogging viser en generell, handlingsrettet innloggingsside. Feil fra
+  Keycloak Admin API oversettes til en sikker driftsmelding i adminflaten;
+  tekniske detaljer og hemmeligheter vises ikke til brukeren.
 - **Server-rendering:** Offentlige sider rendres på serveren; ingen brukerinput settes inn som rå HTML.
 - **Thymeleaf escaping:** Tekst fra listingdata går via `th:text`, som reduserer XSS-risiko.
 - **Inputkontroll:** `tilstand` avvises med `400` når verdien ikke er en kjent enum.

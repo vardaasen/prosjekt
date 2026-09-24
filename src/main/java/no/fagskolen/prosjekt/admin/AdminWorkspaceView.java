@@ -11,6 +11,7 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import no.fagskolen.prosjekt.marketplace.applications.SellerApplications;
+import no.fagskolen.prosjekt.marketplace.applications.SellerRoleProvisioningException;
 import no.fagskolen.prosjekt.marketplace.domain.SellerApplication;
 import no.fagskolen.prosjekt.marketplace.domain.SellerApplicationAuditEntry;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,6 +31,8 @@ public class AdminWorkspaceView extends VerticalLayout {
                 sellerApplications.approve(application.id(), currentAdministratorSubject());
                 refresh(pendingApplications, sellerApplications);
                 Notification.show("Selgersøknaden er godkjent.");
+            } catch (SellerRoleProvisioningException exception) {
+                Notification.show(exception.getMessage());
             } catch (IllegalArgumentException | IllegalStateException exception) {
                 Notification.show(exception.getMessage());
             }

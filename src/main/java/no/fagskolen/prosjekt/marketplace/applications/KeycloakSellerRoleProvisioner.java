@@ -6,6 +6,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 import java.util.List;
 import java.util.Map;
@@ -27,17 +28,22 @@ class KeycloakSellerRoleProvisioner implements SellerRoleProvisioner {
 
     @Override
     public void grantSellerRole(String oidcSubject) {
-        var accessToken = accessToken();
-        var userId = userId(oidcSubject, accessToken);
-        var sellerRole = sellerRole(accessToken);
-        client.post()
-                .uri("/admin/realms/{realm}/users/{userId}/role-mappings/realm",
-                        properties.realm(), userId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .headers(headers -> headers.setBearerAuth(accessToken))
-                .body(List.of(sellerRole))
-                .retrieve()
-                .toBodilessEntity();
+        try {
+            var accessToken = accessToken();
+            var userId = userId(oidcSubject, accessToken);
+            var sellerRole = sellerRole(accessToken);
+            client.post()
+                    .uri("/admin/realms/{realm}/users/{userId}/role-mappings/realm",
+                            properties.realm(), userId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .headers(headers -> headers.setBearerAuth(accessToken))
+                    .body(List.of(sellerRole))
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (RestClientException exception) {
+            throw new SellerRoleProvisioningException(
+                    "Kunne ikke tildele selgerrollen akkurat nå. Prøv igjen senere.", exception);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -79,7 +85,8 @@ class KeycloakSellerRoleProvisioner implements SellerRoleProvisioner {
 
     private String requiredString(Map<String, Object> response, String field, String responseName) {
         if (response == null || !(response.get(field) instanceof String value) || value.isBlank()) {
-            throw new IllegalStateException(responseName + " did not contain " + field + ".");
+            throw new SellerRoleProvisioningException(
+                    "Kunne ikke bekrefte selgerrollen hos identitetsleverandøren.");
         }
         return value;
     }

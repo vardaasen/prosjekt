@@ -128,8 +128,25 @@ class PublicMarketplaceControllerTest {
     }
 
     @Test
-    void preventsSellersFromOpeningTheAdministrationWorkspace() throws Exception {
+    void explainsWhySellersCannotOpenTheAdministrationWorkspace() throws Exception {
         mockMvc.perform(get("/admin").with(user("seller").roles("SELLER")))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void rendersSafeLoginFailureGuidance() throws Exception {
+        mockMvc.perform(get("/innlogging-feilet"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Innloggingen kunne ikke fullføres")))
+                .andExpect(content().string(containsString("Prøv å logge inn igjen")))
+                .andExpect(content().string(not(containsString("exception"))));
+    }
+
+    @Test
+    void rendersSafeAccessDeniedGuidance() throws Exception {
+        mockMvc.perform(get("/tilgang-nektet"))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string(containsString("Du har ikke tilgang til denne siden")))
+                .andExpect(content().string(containsString("Til forsiden")));
     }
 }

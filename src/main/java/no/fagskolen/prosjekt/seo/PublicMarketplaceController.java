@@ -92,6 +92,25 @@ public class PublicMarketplaceController {
         return "sell";
     }
 
+    @GetMapping("/tilgang-nektet")
+    public String accessDenied(Model model, HttpServletResponse response) {
+        response.setStatus(HttpStatus.FORBIDDEN.value());
+        model.addAttribute("title", "Ingen tilgang");
+        model.addAttribute("description", "Du har ikke tilgang til denne siden.");
+        model.addAttribute("robots", "noindex,nofollow");
+        model.addAttribute("canonicalUrl", absoluteUrl("/tilgang-nektet"));
+        return "error/403";
+    }
+
+    @GetMapping("/innlogging-feilet")
+    public String loginFailed(Model model) {
+        model.addAttribute("title", "Innloggingen kunne ikke fullføres");
+        model.addAttribute("description", "Innloggingen kunne ikke fullføres. Prøv igjen.");
+        model.addAttribute("robots", "noindex,nofollow");
+        model.addAttribute("canonicalUrl", absoluteUrl("/innlogging-feilet"));
+        return "error/login-failed";
+    }
+
     @GetMapping(value = "/robots.txt", produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> robots() {
         return ResponseEntity.ok("""

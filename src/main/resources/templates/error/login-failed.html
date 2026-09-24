@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="no" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${title}">Innloggingen kunne ikke fullføres</title>
+  <meta name="description" th:content="${description}">
+  <meta name="robots" th:content="${robots}">
+  <link rel="canonical" th:href="${canonicalUrl}">
+  <link rel="stylesheet" href="/styles/site.css">
+</head>
+<body>
+<main class="shell">
+  <p class="eyebrow">Innlogging</p>
+  <h1>Innloggingen kunne ikke fullføres</h1>
+  <p>Prøv igjen. Hvis problemet fortsetter, kontakt markedsplassadministratoren.</p>
+  <a class="button" href="/oauth2/authorization/keycloak">Prøv å logge inn igjen</a>
+</main>
+</body>
+</html>
