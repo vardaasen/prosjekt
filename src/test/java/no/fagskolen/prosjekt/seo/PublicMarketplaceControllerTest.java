@@ -15,6 +15,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
@@ -99,5 +100,18 @@ class PublicMarketplaceControllerTest {
         mockMvc.perform(get("/app"))
                 .andExpect(status().isFound())
                 .andExpect(redirectedUrl("/oauth2/authorization/keycloak"));
+    }
+
+    @Test
+    void redirectsAnonymousAdministrationRequestsToKeycloak() throws Exception {
+        mockMvc.perform(get("/admin"))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("/oauth2/authorization/keycloak"));
+    }
+
+    @Test
+    void preventsSellersFromOpeningTheAdministrationWorkspace() throws Exception {
+        mockMvc.perform(get("/admin").with(user("seller").roles("SELLER")))
+                .andExpect(status().isForbidden());
     }
 }

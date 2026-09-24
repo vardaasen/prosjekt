@@ -69,6 +69,21 @@
           "temporary": false
         }
       ]
+    },
+    {
+      "username": "admin-demo",
+      "enabled": true,
+      "emailVerified": true,
+      "realmRoles": [
+        "ADMIN"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin-demo-password",
+          "temporary": false
+        }
+      ]
     }
   ]
 }

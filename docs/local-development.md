@@ -28,6 +28,19 @@ demo-selgeren:
 brukerne og administratorpassordets Compose-standardverdi er kun for lokal
 utvikling. De må ikke brukes eller importeres til staging eller produksjon.
 
+Den lokale markedsplassadministratoren er separat fra Keycloaks
+bootstrap-administrator:
+
+| Felt | Verdi |
+| --- | --- |
+| Brukernavn | `admin-demo` |
+| Passord | `admin-demo-password` |
+| Rolle | `ADMIN` |
+| Appflate | `http://localhost:8080/admin` |
+
+`admin-demo` er bare for å teste tilgangsgrensen og den framtidige
+godkjenningsflyten. Den kan ikke brukes som Keycloak-plattformadministrator.
+
 ## Produksjonsgrenser
 
 Compose-filen kjører Keycloak med `start-dev` og en lokal, ukryptert
@@ -36,6 +49,12 @@ hemmelighetsforvaltning, særskilt realm/klient, administratorkonto og
 produksjonsdatabase. Overstyr OIDC-endepunktene gjennom de dokumenterte
 `KEYCLOAK_*`-miljøvariablene; aldri legg produksjonsverdier i
 `application.properties`.
+
+Følg userflow 8, `docs/userflows/diagrams/08-operator-installs-and-bootstraps-environment.mmd`,
+ved oppstart av staging eller produksjon. Første markedsplassadministrator
+opprettes manuelt etter Keycloak-deploy og før markedsplassen eksponeres for
+registrering; applikasjonen skal aldri opprette eller tildele `ADMIN` ved
+oppstart.
 
 Stopp lokale containere uten å slette data:
 

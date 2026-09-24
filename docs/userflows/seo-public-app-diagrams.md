@@ -24,6 +24,7 @@ beskriver et bredere målbilde enn den implementerte prototypen.
 | 4. Listedetalj til forespørsel eller lagring | Delvis | Publisert detaljside med selger- og dokumentasjonsdata | Forespørsel, lagring, kjøperinnlogging og retur-URL |
 | 5. Selger starter fra offentlig side | Delvis | Keycloak-innlogging, `SELLER`-krav på `/app`, privat opprettelse av utkast og publisering | `/selg`, bilder, dokumenter, redigering og arkivering |
 | 7. Administrator godkjenner selgersøknad | Planlagt | Beslutningsgrense for roller og bootstrap | Selgersøknad, `/admin`, auditlogg og trygg Keycloak-administrasjonsintegrasjon |
+| 8. Operatør installerer og bootstrapper miljø | Delvis | Lokal Compose, realm-import og beskyttet `/admin` | Produksjonsrunbook, hemmelighetsforvaltning og tilgangsregister |
 
 Diagram 6 dekker den implementerte selgerflyten som ikke fantes da de
 opprinnelige diagrammene ble laget.
@@ -178,4 +179,22 @@ flowchart TD
     K --> L[Opprett eller aktiver SellerAccount]
     L --> M[Lagre beslutning og auditlogg]
     M --> N[Bruker logger inn som SELLER og åpner /app]
+```
+
+## 8. Operatør installerer og bootstrapper miljø
+
+```mermaid
+flowchart TD
+    A[Operatør starter nytt miljø] --> B[Opprett separate PostgreSQL-databaser for markedsplass og Keycloak]
+    B --> C[Hent hemmeligheter fra miljøets hemmelighetsforvaltning]
+    C --> D[Deploy Keycloak med HTTPS, produksjonsdatabase og dedikert realm]
+    D --> E[Opprett eller roter Keycloak-plattformadministrator]
+    E --> F[Opprett første navngitte markedsplassadministrator]
+    F --> G[Tildel kun realmrollen ADMIN]
+    G --> H[Dokumenter tilgang i miljøets tilgangsregister]
+    H --> I[Deploy markedsplass med Flyway-migreringer]
+    I --> J[Verifiser offentlig katalog, OIDC-login og /admin]
+    J --> K{ADMIN har tilgang og SELLER mangler /admin?}
+    K -- Nei --> L[Stopp utrulling og korriger autorisasjon]
+    K -- Ja --> M[Miljø klart for selgersøknader]
 ```
