@@ -41,10 +41,25 @@ Foretrukne skills: generell TDD, Spring Boot Testing og Java Junit. Agentene i `
 
 ## Agent skills
 
-Prosjektspesifikke skills ligger i `.github/skills/`. Matt Pocock-settet er
-bevisst kuratert til arbeidsflyter prosjektet bruker; de øvrige skillene
+Prosjektspesifikke skills ligger i `.github/skills/` (kilden, brukt av
+Copilot). Claude Code leser en generert kopi i `.claude/skills/`: rediger
+alltid `.github/skills/` og kjør `scripts/sync-claude-skills.sh`. I Claude
+Code heter `code-review` `two-axis-review`, fordi Claude Code har en innebygd
+`/code-review`. Flere Matt Pocock-skills er tilpasset prosjektet
+(`docs/decisions/`, `docs/agents/`), så hashene i `skills-lock.json` viser
+opprinnelsen, ikke nåværende innhold.
+
+Bruk `intent-grounding` før enhver funksjonell endring eller feilretting:
+den krever en kort begrunnelse mot `CONTEXT.md`, userflows og
+beslutningsnotater før kode, og stopper fiks-løkker der workarounds stables
+oppå et valg som strider mot arkitekturen.
+
+Matt Pocock-settet er bevisst kuratert til arbeidsflyter prosjektet bruker; de øvrige skillene
 dekker Java, Vaadin, SEO og database. Provenans for det kuraterte settet ligger
 i `skills-lock.json`.
+
+`grilling` er lagt til lokalt fordi `grill-with-docs` og `triage` bygger på
+den.
 
 For domene-/persistensfasen brukes særlig `domain-modeling`,
 `codebase-design`, `tdd`, `effective-java`, `database`, `spring-data-jpa` og

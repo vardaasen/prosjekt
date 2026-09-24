@@ -5,6 +5,14 @@ description: Persistence rules for Spring Data JPA and Hibernate in this Spring 
 
 # Spring Data JPA for this project
 
+**Project boundary (decision note 0004 wins over anything below):** domain
+objects have no JPA annotations. `@Entity` classes and Spring Data
+repositories are internal to the persistence adapter
+(`marketplace/persistence`) and are translated by a Data Mapper. Services and
+Vaadin views work with domain types through the seams (for example
+`PublishedListingCatalogue`), never with entities or repositories directly.
+Flyway is the only schema owner.
+
 Goal: every query is predictable. No N+1 selects, no in-memory pagination,
 no lazy loading surprises in the UI.
 
