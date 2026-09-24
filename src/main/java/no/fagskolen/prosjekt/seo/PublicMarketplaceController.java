@@ -133,6 +133,22 @@ public class PublicMarketplaceController {
         return "redirect:/selgersoknad";
     }
 
+    // Krever innlogging (SecurityConfiguration), så en anonym bruker sendes via
+    // Keycloak og tilbake hit, og videre til siden der «Logg inn» ble trykket.
+    // Bare lokale stier godtas, ellers ville dette vært en åpen videresending.
+    @GetMapping("/logg-inn")
+    public String logIn(@RequestParam(defaultValue = "/") String returnTo) {
+        return "redirect:" + localPathOrHome(returnTo);
+    }
+
+    private static String localPathOrHome(String returnTo) {
+        var local = returnTo.startsWith("/")
+                && !returnTo.startsWith("//")
+                && !returnTo.contains("\\")
+                && returnTo.chars().noneMatch(Character::isISOControl);
+        return local ? returnTo : "/";
+    }
+
     @GetMapping("/tilgang-nektet")
     public String accessDenied(Model model, HttpServletResponse response) {
         response.setStatus(HttpStatus.FORBIDDEN.value());
@@ -158,6 +174,7 @@ public class PublicMarketplaceController {
                 User-agent: *
                 Allow: /
                 Disallow: /app
+                Disallow: /logg-inn
                 Sitemap: %s
                 """.formatted(absoluteUrl("/sitemap.xml")));
     }

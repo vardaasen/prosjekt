@@ -31,7 +31,8 @@ class SecurityConfiguration {
                         // tilgangskontrollen i Vaadin er @RolesAllowed på visningene,
                         // håndhevet av VaadinSecurityConfigurer nedenfor.
                         .requestMatchers("/app/admin", "/app/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/selgersoknad", "/selgersoknad/**").authenticated())
+                        .requestMatchers("/selgersoknad", "/selgersoknad/**").authenticated()
+                        .requestMatchers("/logg-inn").authenticated())
                 .oauth2Login(oauth2 -> oauth2
                         .failureHandler((request, response, exception) ->
                                 response.sendRedirect("/innlogging-feilet"))

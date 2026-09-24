@@ -96,6 +96,7 @@ class PublicMarketplaceControllerTest {
     void exposesCrawlerEntryPoints() throws Exception {
         mockMvc.perform(get("/robots.txt"))
                 .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Disallow: /logg-inn")))
                 .andExpect(content().string(containsString("Sitemap: http://localhost/sitemap.xml")));
 
         mockMvc.perform(get("/sitemap.xml"))
@@ -225,6 +226,54 @@ class PublicMarketplaceControllerTest {
     void explainsWhySellersCannotOpenTheAdministrationWorkspace() throws Exception {
         mockMvc.perform(get("/app/admin").servletPath("/app").with(user("seller").roles("SELLER")))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void offersLoginThatReturnsToTheCurrentPageForAnonymousVisitors() throws Exception {
+        mockMvc.perform(get("/utstyr"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("href=\"/logg-inn?returnTo=/utstyr\" rel=\"nofollow\">Logg inn</a>")))
+                .andExpect(content().string(not(containsString("Logg ut"))));
+    }
+
+    @Test
+    void showsLogoutInsteadOfLoginToLoggedInPersons() throws Exception {
+        mockMvc.perform(get("/utstyr").with(oidcLogin().idToken(token -> token.subject("buyer-subject"))))
+                .andExpect(content().string(containsString("href=\"/selg\">Selg utstyr</a>")))
+                .andExpect(content().string(containsString("<form method=\"post\" action=\"/logout\">")))
+                .andExpect(content().string(not(containsString("Logg inn</a>"))))
+                .andExpect(content().string(not(containsString("Min søknad"))));
+    }
+
+    @Test
+    void linksMarketplaceAdministratorsToAdministration() throws Exception {
+        mockMvc.perform(get("/").with(user("admin").roles("ADMIN")))
+                .andExpect(content().string(containsString("href=\"/app/admin\">Administrasjon</a>")));
+    }
+
+    @Test
+    void asksAnonymousVisitorsToLogInBeforeReturning() throws Exception {
+        mockMvc.perform(get("/logg-inn").param("returnTo", "/utstyr"))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("/oauth2/authorization/keycloak"));
+    }
+
+    @Test
+    void returnsLoggedInUsersToTheLocalPageTheyCameFrom() throws Exception {
+        mockMvc.perform(get("/logg-inn").param("returnTo", "/utstyr/sentrifugalpumpe-450")
+                        .with(oidcLogin().idToken(token -> token.subject("buyer-subject"))))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("/utstyr/sentrifugalpumpe-450"));
+    }
+
+    @Test
+    void refusesToReturnToOtherSites() throws Exception {
+        for (var returnTo : new String[] {"//evil.example/x", "https://evil.example", "/\\evil.example", "utstyr"}) {
+            mockMvc.perform(get("/logg-inn").param("returnTo", returnTo)
+                            .with(oidcLogin().idToken(token -> token.subject("buyer-subject"))))
+                    .andExpect(status().isFound())
+                    .andExpect(redirectedUrl("/"));
+        }
     }
 
     @Test
