@@ -37,6 +37,8 @@ Sist oppdatert: 2026-09-24
 - Introdusert `SellerAccount` som en idempotent, persistet kobling mellom
   Keycloak-subject (`sub`) og domenets `Seller`. Kontoen opprettes ved første
   innlogging som `SELLER` og eier kommende utkast og annonser.
+- Implementert første utkastflyt i selgerområdet. Et utkast er `DRAFT`, får
+  eier gjennom `SellerAccount`, og listes bare for den innloggede selgeren.
 
 ## Nåværende arkitektur
 
@@ -46,7 +48,7 @@ Sist oppdatert: 2026-09-24
 | Innlogget appflate | Vaadin Flow + Keycloak OIDC under `/app` | Krever `SELLER`; minimal startflate |
 | Data | PostgreSQL + Flyway + JPA Data Mapper | Aktiv katalogadapter; in-memory-adapter beholdes for enhetstester |
 | Identitet og tilgang | Keycloak OIDC + Spring Security | Lokal demo-realm; produksjonskonfigurasjon gjenstår |
-| Selgereierskap | `SellerAccount` + Flyway V3 | Stabil OIDC-subject kobles til selger; listing-eierskap kommer neste |
+| Selgereierskap | `SellerAccount` + Flyway V4 | Utkast eies og listes per selgerkonto |
 | Designkilde | Eksisterende designmanual + mockups | Figma-designsystem skal formaliseres |
 
 ## Kvalitetssignal
@@ -70,15 +72,15 @@ Sist oppdatert: 2026-09-24
    `PUBLISHED`-annonser; utkast og arkiverte annonser skal gi 404 offentlig.
 2. Opprett Figma-artefakt for offentlig katalog, annonsedetalj og
    selgerinngang basert på eksisterende designmanual.
-3. Implementer utkastflyt under `/app`, der `SellerAccount` eier hver annonse
-   og serveren håndhever eierskapet for alle muterende operasjoner.
+3. Implementer redigering, publisering og arkivering av egne utkast med
+   server-side eierskapskontroll.
 4. Koble kontaktforespørsel fra offentlig annonsedetalj til autentisert eller
    eksplisitt gjesteprosess.
 
 ## Neste naturlige steg
 
-Neste funksjonelle steg er en utkastflyt: en innlogget selger kan opprette,
-redigere, publisere og arkivere **egne** annonser. `SellerAccount` må da være
-den persisted eieren av hver annonse, og alle muterende operasjoner må sjekke
-eierskapet på serveren. `DRAFT`/`PUBLISHED`/`ARCHIVED` er en del av domenet:
+Neste funksjonelle steg er å utvide utkastflyten med redigering, publisering
+og arkivering av **egne** annonser. `SellerAccount` er den persisted eieren,
+og alle muterende operasjoner skal slå opp annonsen med både slug og
+OIDC-subject på serveren. `DRAFT`/`PUBLISHED`/`ARCHIVED` er en del av domenet:
 bare publiserte annonser er synlige i katalog, annonsedetalj og sitemap.

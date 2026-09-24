@@ -34,4 +34,8 @@ interface ListingJpaRepository extends JpaRepository<ListingJpaEntity, Long> {
     Optional<ListingJpaEntity> findBySlugAndPublicationStatus(
             String slug,
             ListingPublicationStatus publicationStatus);
+
+    List<ListingJpaEntity> findAllBySellerAccountOidcSubjectAndPublicationStatusOrderByIdDesc(
+            String oidcSubject,
+            ListingPublicationStatus publicationStatus);
 }

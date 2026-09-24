@@ -13,6 +13,9 @@ Dette er en prototype-baseline, ikke en full sikkerhetssertifisering. Punktene s
 - **Selgereierskap:** En `SellerAccount` kobler Keycloaks stabile `sub` til en
   selger uten å kopiere bruker- eller passorddata. Kontoregistrering er
   idempotent, slik at gjentatt innlogging ikke oppretter flere selgerkontoer.
+- **Utkast:** Nye utkast har en databasefremmednøkkel til eierens
+  `SellerAccount`. Søk etter utkast filtreres på den innloggede kontoens
+  OIDC-subject, slik at en selger ikke kan se en annens utkast.
 - **Server-rendering:** Offentlige sider rendres på serveren; ingen brukerinput settes inn som rå HTML.
 - **Thymeleaf escaping:** Tekst fra listingdata går via `th:text`, som reduserer XSS-risiko.
 - **Inputkontroll:** `tilstand` avvises med `400` når verdien ikke er en kjent enum.

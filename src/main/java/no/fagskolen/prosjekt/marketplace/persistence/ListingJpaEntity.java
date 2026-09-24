@@ -11,6 +11,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import no.fagskolen.prosjekt.marketplace.domain.EquipmentCategory;
 import no.fagskolen.prosjekt.marketplace.domain.ListingCondition;
@@ -62,6 +63,10 @@ class ListingJpaEntity {
     @Column(nullable = false)
     private String sellerLocation;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller_account_subject")
+    private SellerAccountJpaEntity sellerAccount;
+
     @Column(nullable = false)
     private LocalDate publishedAt;
 
@@ -90,6 +95,38 @@ class ListingJpaEntity {
             LocalDate publishedAt,
             String summary,
             Set<String> documentation) {
+        this(
+                slug,
+                title,
+                location,
+                condition,
+                category,
+                publicationStatus,
+                priceNok,
+                sellerName,
+                verifiedSeller,
+                sellerLocation,
+                null,
+                publishedAt,
+                summary,
+                documentation);
+    }
+
+    ListingJpaEntity(
+            String slug,
+            String title,
+            String location,
+            ListingCondition condition,
+            EquipmentCategory category,
+            ListingPublicationStatus publicationStatus,
+            BigDecimal priceNok,
+            String sellerName,
+            boolean verifiedSeller,
+            String sellerLocation,
+            SellerAccountJpaEntity sellerAccount,
+            LocalDate publishedAt,
+            String summary,
+            Set<String> documentation) {
         this.slug = slug;
         this.title = title;
         this.location = location;
@@ -100,6 +137,7 @@ class ListingJpaEntity {
         this.sellerName = sellerName;
         this.verifiedSeller = verifiedSeller;
         this.sellerLocation = sellerLocation;
+        this.sellerAccount = sellerAccount;
         this.publishedAt = publishedAt;
         this.summary = summary;
         this.documentation = new LinkedHashSet<>(documentation);
@@ -143,6 +181,10 @@ class ListingJpaEntity {
 
     String sellerLocation() {
         return sellerLocation;
+    }
+
+    SellerAccountJpaEntity sellerAccount() {
+        return sellerAccount;
     }
 
     LocalDate publishedAt() {

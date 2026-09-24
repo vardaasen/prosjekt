@@ -48,6 +48,11 @@ Annonsens livssyklus i markedsplassen: utkast, publisert eller arkivert.
 Bare en publisert annonse er offentlig synlig.
 _Avoid_: Synlighetsstatus, annonsetilstand
 
+**Utkast**:
+En annonse under utarbeidelse. Den eies av én selgerkonto og er bare synlig
+for denne selgeren til den publiseres.
+_Avoid_: Kladd, upublisert annonse
+
 ## Tillit og dialog
 
 **Dokumentasjon**:

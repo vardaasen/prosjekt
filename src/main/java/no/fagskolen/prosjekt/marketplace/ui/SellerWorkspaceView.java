@@ -1,32 +1,98 @@
 package no.fagskolen.prosjekt.marketplace.ui;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import no.fagskolen.prosjekt.marketplace.accounts.SellerAccountRegistry;
+import no.fagskolen.prosjekt.marketplace.drafts.ListingDraft;
+import no.fagskolen.prosjekt.marketplace.drafts.SellerListingDrafts;
+import no.fagskolen.prosjekt.marketplace.domain.EquipmentCategory;
+import no.fagskolen.prosjekt.marketplace.domain.Listing;
+import no.fagskolen.prosjekt.marketplace.domain.ListingCondition;
+import no.fagskolen.prosjekt.marketplace.domain.SellerAccount;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.textfield.BigDecimalField;
+import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.component.textfield.TextField;
 
 @Route("app")
 @PageTitle("Selgerområde | Havbruksbrukt")
 public class SellerWorkspaceView extends VerticalLayout {
 
-    public SellerWorkspaceView(SellerAccountRegistry sellerAccountRegistry) {
+    public SellerWorkspaceView(
+            SellerAccountRegistry sellerAccountRegistry,
+            SellerListingDrafts sellerListingDrafts) {
         var oidcUser = currentOidcUser();
         var sellerAccount = sellerAccountRegistry.registerSellerAccount(
                 oidcUser.getSubject(),
                 sellerName(oidcUser));
+        var drafts = new Grid<Listing>(Listing.class, false);
+        drafts.addColumn(Listing::title).setHeader("Tittel");
+        drafts.addColumn(Listing::slug).setHeader("Slug");
+        drafts.addColumn(Listing::publicationStatus).setHeader("Status");
+
+        var slug = new TextField("Slug");
+        var title = new TextField("Tittel");
+        var location = new TextField("Lokasjon");
+        var condition = new ComboBox<ListingCondition>("Tilstand");
+        condition.setItems(ListingCondition.values());
+        condition.setItemLabelGenerator(ListingCondition::displayName);
+        condition.setValue(ListingCondition.GOOD);
+        var category = new ComboBox<EquipmentCategory>("Utstyrskategori");
+        category.setItems(EquipmentCategory.values());
+        category.setItemLabelGenerator(EquipmentCategory::label);
+        category.setValue(EquipmentCategory.OTHER);
+        var price = new BigDecimalField("Pris i NOK");
+        price.setValue(java.math.BigDecimal.ZERO);
+        var summary = new TextArea("Beskrivelse");
+
+        var createDraft = new Button("Opprett utkast", event -> {
+            try {
+                sellerListingDrafts.createDraft(
+                        sellerAccount,
+                        new ListingDraft(
+                                slug.getValue(),
+                                title.getValue(),
+                                location.getValue(),
+                                condition.getValue(),
+                                category.getValue(),
+                                price.getValue(),
+                                summary.getValue()));
+                drafts.setItems(sellerListingDrafts.findDrafts(sellerAccount));
+                slug.clear();
+                title.clear();
+                location.clear();
+                summary.clear();
+                Notification.show("Utkastet er opprettet.");
+            } catch (IllegalArgumentException exception) {
+                Notification.show(exception.getMessage());
+            }
+        });
+        drafts.setItems(sellerListingDrafts.findDrafts(sellerAccount));
 
         setSpacing(true);
         setPadding(true);
         add(
                 new H1("Selgerområde"),
                 new Paragraph("Innlogget som " + sellerAccount.seller().name() + "."),
-                new Paragraph("Nye annonser vil opprettes som utkast og eies av denne selgerkontoen."),
-                new Button("Ny annonse"));
+                new Paragraph("Opprett utkast. De er bare synlige for denne selgerkontoen."),
+                slug,
+                title,
+                location,
+                condition,
+                category,
+                price,
+                summary,
+                createDraft,
+                new Paragraph("Mine utkast"),
+                drafts);
     }
 
     private OidcUser currentOidcUser() {
