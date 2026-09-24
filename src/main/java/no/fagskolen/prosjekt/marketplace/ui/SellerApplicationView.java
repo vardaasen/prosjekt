@@ -9,6 +9,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.PermitAll;
 import no.fagskolen.prosjekt.marketplace.applications.SellerApplications;
 import no.fagskolen.prosjekt.marketplace.domain.Seller;
 import no.fagskolen.prosjekt.marketplace.domain.SellerApplication;
@@ -17,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
 @Route("selgersoknad")
+@PermitAll
 @PageTitle("Søk som selger | Havbruksbrukt")
 public class SellerApplicationView extends VerticalLayout {
 

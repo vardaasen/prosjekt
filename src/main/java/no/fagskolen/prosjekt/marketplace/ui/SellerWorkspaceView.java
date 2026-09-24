@@ -9,6 +9,7 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.RolesAllowed;
 import no.fagskolen.prosjekt.marketplace.accounts.SellerAccountRegistry;
 import no.fagskolen.prosjekt.marketplace.drafts.ListingDraft;
 import no.fagskolen.prosjekt.marketplace.drafts.SellerListingDrafts;
@@ -25,6 +26,7 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 
 @Route("app")
+@RolesAllowed("SELLER")
 @PageTitle("Selgerområde | Havbruksbrukt")
 public class SellerWorkspaceView extends VerticalLayout {
 

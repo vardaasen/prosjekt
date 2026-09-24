@@ -10,6 +10,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.RolesAllowed;
 import no.fagskolen.prosjekt.marketplace.applications.SellerApplications;
 import no.fagskolen.prosjekt.marketplace.applications.SellerRoleProvisioningException;
 import no.fagskolen.prosjekt.marketplace.domain.SellerApplication;
@@ -18,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
 @Route("admin")
+@RolesAllowed("ADMIN")
 @PageTitle("Administrasjon | Havbruksbrukt")
 public class AdminWorkspaceView extends VerticalLayout {
 
