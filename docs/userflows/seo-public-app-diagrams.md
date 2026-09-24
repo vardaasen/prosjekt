@@ -18,13 +18,14 @@ beskriver et bredere målbilde enn den implementerte prototypen.
 
 | Diagram | Status | Implementert | Ikke implementert |
 | --- | --- | --- | --- |
-| 1. Offentlig sitemap og SEO-innganger | Delvis | `/`, `/utstyr`, `/utstyr/{slug}`, sitemap og robots | Kategorisider, `/selg`, `/om`, offentlig innlogging og forespørsel |
+| 1. Offentlig sitemap og SEO-innganger | Delvis | `/`, `/utstyr`, `/utstyr/{slug}`, `/selg`, sitemap og robots | Kategorisider, `/om`, offentlig innlogging og forespørsel |
 | 2. Kjøper finner utstyr fra forsiden | Delvis | Forside, publiserte annonser, katalog, søk og detaljside | Kategorinavigasjon, kjøperkonto, lagring og forespørsel |
 | 3. Browse/filter til listedetalj | Delvis | Katalog, fritekst, lokasjon, tilstand, nulltreff og detaljside | Prisfilter og kategori-URL-er |
 | 4. Listedetalj til forespørsel eller lagring | Delvis | Publisert detaljside med selger- og dokumentasjonsdata | Forespørsel, lagring, kjøperinnlogging og retur-URL |
-| 5. Selger starter fra offentlig side | Delvis | Keycloak-innlogging, `SELLER`-krav på `/app`, privat opprettelse av utkast og publisering | `/selg`, bilder, dokumenter, redigering og arkivering |
+| 5. Selger starter fra offentlig side | Delvis | `/selg`, Keycloak-innlogging, `SELLER`-krav på `/app`, privat opprettelse av utkast og publisering | Bilder, dokumenter, redigering og arkivering |
 | 7. Administrator godkjenner selgersøknad | Delvis | Autentisert `/selgersoknad`, vedvarende `PENDING`-søknad, `/admin`, auditlogg, aktivering av selgerkonto og testet Keycloak Admin API-adapter | E-postverifisert selvregistrering, rate limiting og per-miljø service-konto/hemmelighet |
 | 8. Operatør installerer og bootstrapper miljø | Delvis | Lokal Compose, realm-import og beskyttet `/admin` | Produksjonsrunbook, hemmelighetsforvaltning og tilgangsregister |
+| 9. Lokal demo og rollebytte | Ferdig for lokal demo | Demo-identiteter, Keycloak-profil, søknad, godkjenning, reinnlogging og 403-/innloggingsfeil | Selvregistrering og produksjonsidentiteter |
 
 Diagram 6 dekker den implementerte selgerflyten som ikke fantes da de
 opprinnelige diagrammene ble laget.
@@ -144,10 +145,10 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[Åpner /app] --> B{Har Keycloak-rollen SELLER?}
-    B -- Nei --> C[Ingen tilgang til selgerområdet]
-    B -- Ja --> D[OIDC-innlogging med Authorization Code og PKCE]
-    D --> E[Registrer eller hent SellerAccount fra OIDC subject]
+    A[Åpner /app] --> B[OIDC-innlogging med Authorization Code og PKCE]
+    B --> C{Har Keycloak-rollen SELLER?}
+    C -- Nei --> D[Vis 403-side med tilgangsveiledning]
+    C -- Ja --> E[Registrer eller hent SellerAccount fra OIDC subject]
     E --> F[Vis egne utkast]
     F --> G[Fyll ut slug, tittel, lokasjon, tilstand, kategori, pris og beskrivelse]
     G --> H{Gyldig og unik slug?}
@@ -166,8 +167,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[Ny identitet registrerer seg hos Keycloak] --> B[E-post verifisert]
-    B --> C[Sender selgersøknad med virksomhetsopplysninger]
+    A[Autentisert OIDC-identitet uten SELLER] --> C[Sender selgersøknad på /selgersoknad]
     C --> D[Lagre søknad som PENDING uten SELLER-rolle]
     D --> E[Markedsplassadministrator åpner /admin]
     E --> F{Har brukeren ADMIN-rolle?}
@@ -176,9 +176,11 @@ flowchart TD
     H --> I{Godkjenn søknad?}
     I -- Nei --> J[Avslå søknad og lagre auditlogg]
     I -- Ja --> K[Tildel SELLER via minst privilegerte Keycloak service-konto]
-    K --> L[Opprett eller aktiver SellerAccount]
-    L --> M[Lagre beslutning og auditlogg]
-    M --> N[Bruker logger inn som SELLER og åpner /app]
+    K --> L{Rolletildeling bekreftet?}
+    L -- Nei --> M[Behold PENDING og vis eksplisitt feil]
+    L -- Ja --> N[Opprett eller aktiver SellerAccount]
+    N --> O[Lagre beslutning og auditlogg]
+    O --> P[Bruker logger inn på nytt som SELLER og åpner /app]
 ```
 
 ## 8. Operatør installerer og bootstrapper miljø
@@ -197,4 +199,28 @@ flowchart TD
     J --> K{ADMIN har tilgang og SELLER mangler /admin?}
     K -- Nei --> L[Stopp utrulling og korriger autorisasjon]
     K -- Ja --> M[Miljø klart for selgersøknader]
+```
+
+## 9. Lokal demo og rollebytte
+
+```mermaid
+flowchart TD
+    A[Start docker compose og app med lokal .env] --> B[Åpne /selg]
+    B --> C{Hvilken demoidentitet?}
+    C -- seller-demo --> D[Åpne /app]
+    D --> E[Logg inn med SELLER]
+    E --> F[Opprett og publiser eget utkast]
+    C -- buyer-demo --> G[Åpne /selgersoknad]
+    G --> H[Fullfør Keycloak-profil hvis påkrevd]
+    H --> I[Send søknad og se PENDING]
+    I --> J[Logg ut]
+    J --> K[Logg inn som admin-demo på /admin]
+    K --> L[Godkjenn søknaden]
+    L --> M{Keycloak tildeler SELLER?}
+    M -- Nei --> N[Vis driftsmelding og behold PENDING]
+    M -- Ja --> O[Auditlogg lagres]
+    O --> P[Logg ut og inn igjen som buyer-demo]
+    P --> Q[Åpne /app som SELLER]
+    C -- seller-demo på /admin --> R[Vis 403-side]
+    H -- Innlogging avbrutt --> S[Vis innloggingsfeil med nytt forsøk]
 ```

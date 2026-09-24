@@ -1,8 +1,8 @@
 flowchart TD
-    A[Åpner /app] --> B{Har Keycloak-rollen SELLER?}
-    B -- Nei --> C[Ingen tilgang til selgerområdet]
-    B -- Ja --> D[OIDC-innlogging med Authorization Code og PKCE]
-    D --> E[Registrer eller hent SellerAccount fra OIDC subject]
+    A[Åpner /app] --> B[OIDC-innlogging med Authorization Code og PKCE]
+    B --> C{Har Keycloak-rollen SELLER?}
+    C -- Nei --> D[Vis 403-side med tilgangsveiledning]
+    C -- Ja --> E[Registrer eller hent SellerAccount fra OIDC subject]
     E --> F[Vis egne utkast]
     F --> G[Fyll ut slug, tittel, lokasjon, tilstand, kategori, pris og beskrivelse]
     G --> H{Gyldig og unik slug?}
