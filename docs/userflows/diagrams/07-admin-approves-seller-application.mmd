@@ -1,7 +1,7 @@
 flowchart TD
     A[Autentisert OIDC-identitet uten SELLER] --> C[Sender selgersøknad på /selgersoknad]
     C --> D[Lagre søknad som PENDING uten SELLER-rolle]
-    D --> E[Markedsplassadministrator åpner /admin]
+    D --> E[Markedsplassadministrator åpner /app/admin]
     E --> F{Har brukeren ADMIN-rolle?}
     F -- Nei --> G[Avvis tilgang]
     F -- Ja --> H[Vurderer virksomhetsopplysninger]
@@ -16,5 +16,5 @@ flowchart TD
     O --> Q
     M --> Q
     Q -- Ja --> H
-    Q -- Nei --> R[Administrator logger ut med knappen «Logg ut» i /admin]
+    Q -- Nei --> R[Administrator logger ut med knappen «Logg ut» i /app/admin]
     O --> P[Bruker logger inn på nytt som SELLER og åpner /app]

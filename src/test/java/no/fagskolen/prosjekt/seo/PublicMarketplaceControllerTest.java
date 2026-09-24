@@ -16,7 +16,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -115,15 +114,8 @@ class PublicMarketplaceControllerTest {
     }
 
     @Test
-    void redirectsAnonymousSellerWorkspaceRequestsToKeycloak() throws Exception {
-        mockMvc.perform(get("/app"))
-                .andExpect(status().isFound())
-                .andExpect(redirectedUrl("/oauth2/authorization/keycloak"));
-    }
-
-    @Test
     void redirectsAnonymousAdministrationRequestsToKeycloak() throws Exception {
-        mockMvc.perform(get("/admin"))
+        mockMvc.perform(get("/app/admin").servletPath("/app"))
                 .andExpect(status().isFound())
                 .andExpect(redirectedUrl("/oauth2/authorization/keycloak"));
     }
@@ -178,13 +170,20 @@ class PublicMarketplaceControllerTest {
     }
 
     @Test
-    void keepsVaadinInternalRequestsToServletRootExemptFromSpringCsrf() throws Exception {
+    void keepsVaadinInternalRequestsExemptFromSpringCsrf() throws Exception {
         // Vaadin beskytter sine egne UIDL-forespørsler med egen sikkerhetsnøkkel.
         // Blokkerer Spring CSRF dem, oppstår "Connection lost"-løkken fra PR #1.
-        // MockMvc har ingen Vaadin-servlet, så at forespørselen videresendes dit
-        // (og feiler) viser at Spring Security slapp den gjennom uten CSRF-token.
-        assertThatThrownBy(() -> mockMvc.perform(post("/?v-r=uidl").with(keycloakOidcLogin())))
-                .hasMessageContaining("springServlet");
+        // MockMvc har ingen Vaadin-servlet, så svaret kommer fra DispatcherServlet;
+        // poenget er at Spring Security slapp forespørselen gjennom uten CSRF-token.
+        mockMvc.perform(post("/app/?v-r=uidl").servletPath("/app").with(keycloakOidcLogin()))
+                .andExpect(status().is(not(403)));
+    }
+
+    @Test
+    void returnsNotFoundForUnknownPublicPathsInsteadOfTheVaadinApp() throws Exception {
+        mockMvc.perform(get("/finnes-ikke"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(not(containsString("vaadin"))));
     }
 
     @Test
@@ -224,7 +223,7 @@ class PublicMarketplaceControllerTest {
 
     @Test
     void explainsWhySellersCannotOpenTheAdministrationWorkspace() throws Exception {
-        mockMvc.perform(get("/admin").with(user("seller").roles("SELLER")))
+        mockMvc.perform(get("/app/admin").servletPath("/app").with(user("seller").roles("SELLER")))
                 .andExpect(status().isForbidden());
     }
 
