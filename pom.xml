@@ -24,6 +24,7 @@
         <tomcat.version>11.0.25</tomcat.version>
         <spring-expression>7.0.9</spring-expression>
         <testcontainers.version>2.0.1</testcontainers.version>
+        <postgresql.version>42.7.12</postgresql.version>
     </properties>
 
     <dependencyManagement>
