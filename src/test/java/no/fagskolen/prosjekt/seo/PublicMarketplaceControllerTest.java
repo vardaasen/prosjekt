@@ -16,10 +16,13 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @SpringBootTest(classes = ProsjektApplication.class)
 @AutoConfigureMockMvc
@@ -125,6 +128,26 @@ class PublicMarketplaceControllerTest {
         mockMvc.perform(get("/selgersoknad"))
                 .andExpect(status().isFound())
                 .andExpect(redirectedUrl("/oauth2/authorization/keycloak"));
+    }
+
+    @Test
+    void rendersSellerApplicationAsServerRenderedPageForAuthenticatedUsers() throws Exception {
+        mockMvc.perform(get("/selgersoknad").with(oidcLogin().idToken(token -> token.subject("buyer-subject"))))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("<h1>Søk som selger</h1>")))
+                .andExpect(content().string(containsString("name=\"sellerName\"")))
+                .andExpect(content().string(not(containsString("vaadin-"))));
+    }
+
+    @Test
+    void submitsSellerApplicationWithCsrfProtection() throws Exception {
+        mockMvc.perform(post("/selgersoknad")
+                        .with(oidcLogin().idToken(token -> token.subject("new-buyer-subject")))
+                        .with(csrf())
+                        .param("sellerName", "Ny Drift AS")
+                        .param("sellerLocation", "Narvik"))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("/selgersoknad"));
     }
 
     @Test

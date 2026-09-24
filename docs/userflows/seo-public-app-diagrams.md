@@ -23,7 +23,7 @@ beskriver et bredere målbilde enn den implementerte prototypen.
 | 3. Browse/filter til listedetalj | Delvis | Katalog, fritekst, lokasjon, tilstand, nulltreff og detaljside | Prisfilter og kategori-URL-er |
 | 4. Listedetalj til forespørsel eller lagring | Delvis | Publisert detaljside med selger- og dokumentasjonsdata | Forespørsel, lagring, kjøperinnlogging og retur-URL |
 | 5. Selger starter fra offentlig side | Delvis | `/selg`, Keycloak-innlogging, `SELLER`-krav på `/app`, privat opprettelse av utkast og publisering | Bilder, dokumenter, redigering og arkivering |
-| 7. Administrator godkjenner selgersøknad | Delvis | Autentisert `/selgersoknad`, vedvarende `PENDING`-søknad, `/admin`, auditlogg, aktivering av selgerkonto og testet Keycloak Admin API-adapter | E-postverifisert selvregistrering, rate limiting og per-miljø service-konto/hemmelighet |
+| 7. Administrator godkjenner selgersøknad | Delvis | Server-rendered `/selgersoknad`, vedvarende `PENDING`-søknad, `/admin`, auditlogg, aktivering av selgerkonto og testet Keycloak Admin API-adapter | E-postverifisert selvregistrering, rate limiting og per-miljø service-konto/hemmelighet |
 | 8. Operatør installerer og bootstrapper miljø | Delvis | Lokal Compose, realm-import og beskyttet `/admin` | Produksjonsrunbook, hemmelighetsforvaltning og tilgangsregister |
 | 9. Lokal demo og rollebytte | Ferdig for lokal demo | Demo-identiteter, Keycloak-profil, søknad, godkjenning, reinnlogging og 403-/innloggingsfeil | Selvregistrering og produksjonsidentiteter |
 

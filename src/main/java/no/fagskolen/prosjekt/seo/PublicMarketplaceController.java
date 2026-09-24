@@ -1,11 +1,15 @@
 package no.fagskolen.prosjekt.seo;
 
 import no.fagskolen.prosjekt.marketplace.catalogue.PublishedListingCatalogue;
+import no.fagskolen.prosjekt.marketplace.applications.SellerApplications;
+import no.fagskolen.prosjekt.marketplace.domain.Seller;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +17,8 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.beans.factory.annotation.Value;
 import jakarta.servlet.http.HttpServletResponse;
 import no.fagskolen.prosjekt.marketplace.domain.ListingCondition;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
 import java.util.Locale;
 
@@ -20,12 +26,15 @@ import java.util.Locale;
 public class PublicMarketplaceController {
 
     private final PublishedListingCatalogue catalogue;
+    private final SellerApplications sellerApplications;
     private final String publicBaseUrl;
 
     public PublicMarketplaceController(
             PublishedListingCatalogue catalogue,
+            SellerApplications sellerApplications,
             @Value("${app.public-base-url:http://localhost}") String publicBaseUrl) {
         this.catalogue = catalogue;
+        this.sellerApplications = sellerApplications;
         this.publicBaseUrl = publicBaseUrl.replaceAll("/+$", "");
     }
 
@@ -92,6 +101,38 @@ public class PublicMarketplaceController {
         return "sell";
     }
 
+    @GetMapping("/selgersoknad")
+    public String sellerApplication(@AuthenticationPrincipal OidcUser oidcUser, Model model) {
+        addSellerApplicationPageMetadata(model);
+        sellerApplications.findLatestFor(oidcUser.getSubject())
+                .ifPresent(application -> {
+                    model.addAttribute("applicationStatus", application.status());
+                    model.addAttribute("applicationMessage", switch (application.status()) {
+                        case PENDING -> "Søknaden venter på vurdering.";
+                        case APPROVED -> "Søknaden er godkjent. Logg inn på nytt for å få tilgang til selgerområdet.";
+                        case REJECTED -> "Søknaden ble avslått: " + application.rejectionReason();
+                    });
+                });
+        return "seller-application";
+    }
+
+    @PostMapping("/selgersoknad")
+    public String submitSellerApplication(
+            @AuthenticationPrincipal OidcUser oidcUser,
+            @RequestParam String sellerName,
+            @RequestParam String sellerLocation,
+            RedirectAttributes redirectAttributes) {
+        try {
+            sellerApplications.submit(
+                    oidcUser.getSubject(),
+                    new Seller(sellerName, false, sellerLocation));
+            redirectAttributes.addFlashAttribute("successMessage", "Selgersøknaden er sendt.");
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
+        return "redirect:/selgersoknad";
+    }
+
     @GetMapping("/tilgang-nektet")
     public String accessDenied(Model model, HttpServletResponse response) {
         response.setStatus(HttpStatus.FORBIDDEN.value());
@@ -143,11 +184,19 @@ public class PublicMarketplaceController {
         if (value == null || value.isBlank()) {
             return null;
         }
+
         try {
             return ListingCondition.valueOf(value.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException exception) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ukjent tilstand");
         }
+    }
+
+    private void addSellerApplicationPageMetadata(Model model) {
+        model.addAttribute("title", "Søk som selger");
+        model.addAttribute("description", "Send en søknad om å bli selger på Havbruksbrukt.");
+        model.addAttribute("robots", "noindex,nofollow");
+        model.addAttribute("canonicalUrl", absoluteUrl("/selgersoknad"));
     }
 
     private String absoluteUrl(String path) {

@@ -52,6 +52,8 @@ godkjenningsskjermen. Den kan ikke brukes som Keycloak-plattformadministrator.
 `http://localhost:8080/selgersoknad`. Godkjenning stopper med en synlig feil
 inntil en Keycloak service-konto er konfigurert; det hindrer at databasen
 markerer søknaden som godkjent uten at `SELLER` faktisk er tildelt.
+Søknadssiden er server-rendered og skal derfor ikke vise Vaadins
+development-mode-klient.
 
 Prøv `seller-demo` på `/admin` for å verifisere at manglende administratorrolle
 viser den brukervennlige 403-siden. Ved avbrutt OIDC-innlogging sendes brukeren

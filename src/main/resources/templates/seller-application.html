@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="no" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${title}">Søk som selger</title>
+  <meta name="description" th:content="${description}">
+  <meta name="robots" th:content="${robots}">
+  <link rel="canonical" th:href="${canonicalUrl}">
+  <link rel="stylesheet" href="/styles/site.css">
+</head>
+<body>
+<header class="shell topbar">
+  <a class="brand" href="/">Havbruksbrukt</a>
+  <nav aria-label="Hovedmeny">
+    <a href="/utstyr">Utforsk utstyr</a>
+    <a href="/selg">Selg utstyr</a>
+  </nav>
+</header>
+<main class="shell">
+  <section class="hero">
+    <p class="eyebrow">Selgersøknad</p>
+    <h1>Søk som selger</h1>
+    <p>Søknaden gir ingen publiseringsrettigheter før en markedsplassadministrator har godkjent den.</p>
+  </section>
+  <p th:if="${successMessage}" class="result-status" role="status" th:text="${successMessage}">Søknaden er sendt.</p>
+  <p th:if="${errorMessage}" class="result-status" role="alert" th:text="${errorMessage}">Søknaden kunne ikke sendes.</p>
+  <section th:if="${applicationStatus != null}" class="card">
+    <h2>Status</h2>
+    <p th:text="${applicationMessage}">Søknaden venter på vurdering.</p>
+  </section>
+  <form th:if="${applicationStatus == null or applicationStatus.name() == 'REJECTED'}" method="post" action="/selgersoknad" class="filters">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+    <label>
+      Virksomhetsnavn
+      <input type="text" name="sellerName" required maxlength="255" autocomplete="organization">
+    </label>
+    <label>
+      Lokasjon
+      <input type="text" name="sellerLocation" required maxlength="255" autocomplete="address-level1">
+    </label>
+    <button class="button" type="submit">Send søknad</button>
+  </form>
+</main>
+</body>
+</html>
