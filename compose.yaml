@@ -5,6 +5,11 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-havbruksbrukt}
       POSTGRES_USER: ${POSTGRES_USER:-havbruksbrukt}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-havbruksbrukt}
+    # Appen kjører på verten (scripts/demo.sh / mvn spring-boot:run) og kobler
+    # til localhost:5432. Porten bindes bare til loopback, så databasen ikke er
+    # eksponert på nettverket.
+    ports:
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -39,7 +44,7 @@ services:
       KC_DB_USERNAME: keycloak
       KC_DB_PASSWORD: keycloak
     ports:
-      - "8180:8080"
+      - "127.0.0.1:8180:8080"
     volumes:
       - ./infra/keycloak:/opt/keycloak/data/import:ro
     depends_on:
