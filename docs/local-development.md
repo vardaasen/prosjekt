@@ -101,24 +101,25 @@ stabile bruker-ID, og tildeler bare `SELLER`. Den oppretter aldri `ADMIN`.
 ### Lokal ende-til-ende-test
 
 Klienten `marketplace-provisioner` opprettes automatisk ved import (se over),
-men uten en fast hemmelighet i filen. Hent (eller generer på nytt) en
-klienthemmelighet for den i Keycloaks admin-konsoll
-(`http://localhost:8180` → realm `havbruksbrukt` → Clients →
-`marketplace-provisioner` → Credentials), og lagre den bare i den
-git-ignorerte `.env`-filen med eiertilgang:
+men uten en fast hemmelighet i filen. Keycloak genererer derfor en ny
+tilfeldig hemmelighet ved hver realm-import, f.eks. etter
+`scripts/demo.sh wipe`. `scripts/demo.sh up` og `restart` henter gjeldende
+hemmelighet fra Keycloak (med `kcadm.sh` inne i Keycloak-containeren) og
+skriver den til den git-ignorerte `.env`-filen med eiertilgang (`600`) før
+appen starter:
 
 ```bash
 KEYCLOAK_ADMIN_ENABLED=true
 KEYCLOAK_ADMIN_BASE_URL=http://localhost:8180
 KEYCLOAK_ADMIN_REALM=havbruksbrukt
 KEYCLOAK_ADMIN_CLIENT_ID=marketplace-provisioner
-KEYCLOAK_ADMIN_CLIENT_SECRET=<hentet fra admin-konsollen>
+KEYCLOAK_ADMIN_CLIENT_SECRET=<synkronisert fra Keycloak>
 ```
 
-`scripts/demo.sh up` leser `.env` automatisk; restart appen med
-`scripts/demo.sh restart` etter at `.env` er oppdatert. Kjører appen fra
-IntelliJ (eller en annen kjøring utenfor `scripts/demo.sh`), sett de samme
-variablene i kjørekonfigurasjonens miljøvariabler i stedet.
+Andre linjer i `.env` beholdes. Kjører appen fra IntelliJ (eller en annen
+kjøring utenfor `scripts/demo.sh`), kopier de samme variablene fra `.env`
+til kjørekonfigurasjonens miljøvariabler, og gjør det på nytt etter hver
+`wipe`.
 
 Etter restart kan `buyer-demo` sende en søknad og `admin-demo` godkjenne den.
 Logg deretter ut og inn igjen som samme identitet for at den nye
@@ -206,11 +207,13 @@ av de tre rollene over).
   og full stack trace) i stedet for å svelge den stille. Vanligste
   årsaker lokalt: `marketplace-provisioner`-klienten finnes ikke ennå i
   Keycloak (`client_not_found` - importer realmet på nytt med
-  `scripts/demo.sh wipe && scripts/demo.sh up`, eller opprett klienten
-  manuelt, se «Keycloak-rolletildeling per miljø» over), eller
-  `KEYCLOAK_ADMIN_CLIENT_SECRET` i `.env`/kjørekonfigurasjonen samsvarer
-  ikke lenger med hemmeligheten i Keycloak (401 `invalid_client` - hent en
-  ny hemmelighet fra admin-konsollen og oppdater `.env`).
+  `scripts/demo.sh wipe && scripts/demo.sh up`), eller
+  `KEYCLOAK_ADMIN_CLIENT_SECRET` samsvarer ikke med hemmeligheten i
+  Keycloak (401 `unauthorized_client` / «Invalid client credentials»).
+  Det siste skjer når realmet er importert på nytt, fordi Keycloak da
+  genererer en ny hemmelighet. `scripts/demo.sh restart` synkroniserer
+  hemmeligheten til `.env` på nytt; kjører appen utenfor skriptet, oppdater
+  miljøvariabelen fra `.env`.
 
 ## Produksjonsgrenser
 
