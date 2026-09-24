@@ -54,6 +54,17 @@
           }
         }
       ]
+    },
+    {
+      "clientId": "marketplace-provisioner",
+      "name": "Marketplace selgerrolle-provisioner",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "description": "Kun client-credentials for KeycloakSellerRoleProvisioner. Ingen fast secret her; se docs/local-development.md."
     }
   ],
   "users": [
@@ -110,6 +121,18 @@
           "temporary": false
         }
       ]
+    },
+    {
+      "username": "service-account-marketplace-provisioner",
+      "enabled": true,
+      "serviceAccountClientId": "marketplace-provisioner",
+      "clientRoles": {
+        "realm-management": [
+          "view-users",
+          "manage-users",
+          "view-realm"
+        ]
+      }
     }
   ]
 }

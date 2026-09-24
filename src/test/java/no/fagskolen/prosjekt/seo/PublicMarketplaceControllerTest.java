@@ -6,12 +6,17 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.OidcLoginRequestPostProcessor;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -136,7 +141,74 @@ class PublicMarketplaceControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("<h1>Søk som selger</h1>")))
                 .andExpect(content().string(containsString("name=\"sellerName\"")))
+                .andExpect(content().string(containsString("<form method=\"post\" action=\"/logout\">")))
+                .andExpect(content().string(not(containsString("href=\"/logout\""))))
                 .andExpect(content().string(not(containsString("vaadin-"))));
+    }
+
+    @Test
+    void redirectsOidcLogoutThroughKeycloakEndSessionEndpoint() throws Exception {
+        mockMvc.perform(post("/logout").with(keycloakOidcLogin()).with(csrf()))
+                .andExpect(status().isFound())
+                .andExpect(header().string("Location", containsString(
+                        "http://localhost:8180/realms/havbruksbrukt/protocol/openid-connect/logout")))
+                .andExpect(header().string("Location", containsString("post_logout_redirect_uri=http://localhost/")))
+                .andExpect(header().string("Location", containsString("id_token_hint=")));
+    }
+
+    @Test
+    void rejectsLogoutWithoutCsrfToken() throws Exception {
+        mockMvc.perform(post("/logout").with(keycloakOidcLogin()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void rejectsLogoutWithVaadinRequestTypeParameterButNoCsrfToken() throws Exception {
+        mockMvc.perform(post("/logout?v-r=uidl").with(keycloakOidcLogin()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void rejectsSellerApplicationWithVaadinRequestTypeParameterButNoCsrfToken() throws Exception {
+        mockMvc.perform(post("/selgersoknad?v-r=uidl")
+                        .with(oidcLogin().idToken(token -> token.subject("forged-subject")))
+                        .param("sellerName", "Forfalsket AS")
+                        .param("sellerLocation", "Narvik"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void keepsVaadinInternalRequestsToServletRootExemptFromSpringCsrf() throws Exception {
+        // Vaadin beskytter sine egne UIDL-forespørsler med egen sikkerhetsnøkkel.
+        // Blokkerer Spring CSRF dem, oppstår "Connection lost"-løkken fra PR #1.
+        // MockMvc har ingen Vaadin-servlet, så at forespørselen videresendes dit
+        // (og feiler) viser at Spring Security slapp den gjennom uten CSRF-token.
+        assertThatThrownBy(() -> mockMvc.perform(post("/?v-r=uidl").with(keycloakOidcLogin())))
+                .hasMessageContaining("springServlet");
+    }
+
+    @Test
+    void doesNotLogOutOnCrossSiteGetNavigation() throws Exception {
+        mockMvc.perform(get("/logout").with(keycloakOidcLogin()))
+                .andExpect(header().doesNotExist("Location"));
+    }
+
+    private static OidcLoginRequestPostProcessor keycloakOidcLogin() {
+        var loginRegistration = ClientRegistration.withRegistrationId("keycloak")
+                .clientId("marketplace")
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .redirectUri("{baseUrl}/login/oauth2/code/{registrationId}")
+                .scope("openid", "profile", "email")
+                .authorizationUri("https://example.invalid/auth")
+                .tokenUri("https://example.invalid/token")
+                .userInfoUri("https://example.invalid/userinfo")
+                .jwkSetUri("https://example.invalid/jwks")
+                .userNameAttributeName(IdTokenClaimNames.SUB)
+                .build();
+
+        return oidcLogin()
+                .clientRegistration(loginRegistration)
+                .idToken(token -> token.subject("buyer-subject"));
     }
 
     @Test

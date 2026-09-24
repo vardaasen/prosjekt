@@ -4,7 +4,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -18,6 +17,7 @@ import no.fagskolen.prosjekt.marketplace.domain.EquipmentCategory;
 import no.fagskolen.prosjekt.marketplace.domain.Listing;
 import no.fagskolen.prosjekt.marketplace.domain.ListingCondition;
 import no.fagskolen.prosjekt.marketplace.domain.SellerAccount;
+import no.fagskolen.prosjekt.security.LogoutForm;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -106,7 +106,7 @@ public class SellerWorkspaceView extends VerticalLayout {
         setPadding(true);
         add(
                 new H1("Selgerområde"),
-                new Anchor("/logout", "Logg ut"),
+                new LogoutForm(),
                 new Paragraph("Innlogget som " + sellerAccount.seller().name() + "."),
                 new Paragraph("Opprett utkast. De er bare synlige for denne selgerkontoen."),
                 draftForm,

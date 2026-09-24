@@ -11,10 +11,15 @@ import org.springframework.web.client.RestClientException;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Component
 @ConditionalOnProperty(prefix = "app.keycloak-admin", name = "enabled", havingValue = "true")
 @EnableConfigurationProperties(KeycloakAdminProperties.class)
 class KeycloakSellerRoleProvisioner implements SellerRoleProvisioner {
+
+    private static final Logger log = LoggerFactory.getLogger(KeycloakSellerRoleProvisioner.class);
 
     private final RestClient client;
     private final KeycloakAdminProperties properties;
@@ -41,6 +46,14 @@ class KeycloakSellerRoleProvisioner implements SellerRoleProvisioner {
                     .retrieve()
                     .toBodilessEntity();
         } catch (RestClientException exception) {
+            // Den brukervendte meldingen skjuler bevisst detaljer (statuskode,
+            // Keycloak-URL osv.) for ikke å lekke infrastrukturinformasjon, men
+            // uten logging her er feilen umulig å diagnostisere i drift. Vanlige
+            // årsaker lokalt: KEYCLOAK_ADMIN_BASE_URL peker feil, eller
+            // service-kontoen til klienten mangler rollene view-users/
+            // manage-users/view-realm i realm-management (se docs/local-development.md).
+            log.error("Kunne ikke tildele SELLER-rollen for subject {} hos Keycloak: {}",
+                    oidcSubject, exception.getMessage(), exception);
             throw new SellerRoleProvisioningException(
                     "Kunne ikke tildele selgerrollen akkurat nå. Prøv igjen senere.", exception);
         }

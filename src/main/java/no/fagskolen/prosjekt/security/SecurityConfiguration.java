@@ -2,17 +2,18 @@ package no.fagskolen.prosjekt.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
+import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
-import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.spring.security.RequestUtil;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -25,17 +26,19 @@ class SecurityConfiguration {
     @Bean
     SecurityFilterChain securityFilterChain(
             HttpSecurity http,
-            GrantedAuthoritiesMapper keycloakRoleMapper) throws Exception {
+            GrantedAuthoritiesMapper keycloakRoleMapper,
+            ClientRegistrationRepository clientRegistrationRepository,
+            RequestUtil vaadinRequestUtil) throws Exception {
         http
                 // Vaadin er kartlagt på servlet-roten (vaadin.url-mapping="/*", standard),
-                // så rammeverkets interne init/uidl/heartbeat-forespørsler (markert med
-                // spørreparameteren "v-r") sendes uten CSRF-token slik Vaadins klient selv
-                // håndterer det internt. Uten dette unntaket blokkerer Spring Securitys
-                // CSRF-filter disse forespørslene før de når kontrolleren, som viste seg
-                // som en evig "Connection lost"-reconnect-løkke etter innlogging på
-                // /admin og /app. Se docs/local-development.md.
-                .csrf(csrf -> csrf.ignoringRequestMatchers(request ->
-                        request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER) != null))
+                // og rammeverkets interne init/uidl/heartbeat-forespørsler beskyttes av
+                // Vaadins egen sikkerhetsnøkkel, ikke Spring Securitys CSRF-token. Uten
+                // unntak blokkeres de og gir en evig "Connection lost"-reconnect-løkke
+                // på /admin og /app. Unntaket må bare gjelde ekte Vaadin-interne
+                // forespørsler (servlet-roten med v-r, VAADIN/push, VAADIN/dynamic):
+                // et unntak for enhver forespørsel med v-r lot f.eks.
+                // POST /logout?v-r=x omgå CSRF. Se docs/local-development.md.
+                .csrf(csrf -> csrf.ignoringRequestMatchers(vaadinRequestUtil::isFrameworkInternalRequest))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/app", "/app/**").hasRole("SELLER")
                         .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
@@ -50,12 +53,24 @@ class SecurityConfiguration {
                 .exceptionHandling(exceptionHandling -> exceptionHandling
                         .accessDeniedPage("/tilgang-nektet"))
                 .logout(logout -> logout
-                        // Enkel lenke-basert utlogging i Vaadin og server-renderte sider:
-                        // GET er ikke CSRF-beskyttet i utgangspunktet, så dette holder
-                        // utloggingen konsistent på tvers av begge UI-lagene i demoen.
-                        .logoutRequestMatcher(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/logout"))
-                        .logoutSuccessUrl("/"));
+                        // Standard Spring Security-utlogging: bare POST /logout med
+                        // CSRF-token. GET-utlogging ville latt et annet nettsted logge
+                        // brukeren ut av både markedsplassen og Keycloak-SSO-økten.
+                        // Vaadin-flatene bruker LogoutForm, Thymeleaf-sidene et skjema.
+                        // Uten RP-initiated logout mot Keycloak overlever Keycloaks
+                        // egen SSO-økt selv om den lokale Spring-økten avsluttes: neste
+                        // innlogging (f.eks. som en annen demobruker) hopper stille over
+                        // Keycloaks innloggingsskjema og gjenbruker forrige identitet.
+                        // oidcLogoutSuccessHandler sender brukeren via Keycloaks
+                        // end_session_endpoint slik at også SSO-økten avsluttes.
+                        .logoutSuccessHandler(oidcLogoutSuccessHandler(clientRegistrationRepository)));
         return http.build();
+    }
+
+    private LogoutSuccessHandler oidcLogoutSuccessHandler(ClientRegistrationRepository clientRegistrationRepository) {
+        var handler = new OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository);
+        handler.setPostLogoutRedirectUri("{baseUrl}/");
+        return handler;
     }
 
     @Bean

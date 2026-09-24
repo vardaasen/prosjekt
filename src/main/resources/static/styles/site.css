@@ -38,6 +38,21 @@ a {
   gap: 1rem;
 }
 
+.topbar nav form {
+  margin: 0;
+}
+
+.link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-sea);
+  font: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 0.12em;
+  cursor: pointer;
+}
+
 .brand {
   color: var(--color-ink);
   font-weight: 800;
@@ -92,6 +107,7 @@ a {
 }
 
 .button:focus-visible,
+.link-button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 select:focus-visible {

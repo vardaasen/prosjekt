@@ -94,6 +94,58 @@ stop_app() {
     rm -f "$PID_FILE"
 }
 
+# Realmfilen deklarerer marketplace-provisioner uten fast hemmelighet (ingen
+# hemmeligheter i Git), så Keycloak genererer en ny tilfeldig hemmelighet ved
+# hver realm-import, f.eks. etter 'wipe'. Hent derfor gjeldende hemmelighet fra
+# Keycloak og skriv den til den git-ignorerte .env før appen starter, slik at
+# appen og Keycloak alltid er enige. Uten dette gir godkjenning av
+# selgersøknader 401 "Invalid client credentials".
+sync_provisioner_secret() {
+    local secret
+    # kcadm kjører inne i Keycloak-containeren med containerens egne
+    # bootstrap-admin-variabler; skriptet trenger ikke kjenne passordet.
+    secret="$(docker compose exec -T keycloak bash -c '
+        set -e
+        kcadm=/opt/keycloak/bin/kcadm.sh
+        config=/tmp/kcadm-demo.config
+        $kcadm config credentials --config "$config" --server http://localhost:8080 \
+            --realm master --user "$KC_BOOTSTRAP_ADMIN_USERNAME" \
+            --password "$KC_BOOTSTRAP_ADMIN_PASSWORD" >/dev/null 2>&1
+        id="$($kcadm get clients --config "$config" -r '"$KEYCLOAK_REALM"' \
+            -q clientId=marketplace-provisioner --fields id --format csv --noquotes)"
+        [ -n "$id" ] || exit 3
+        $kcadm get "clients/$id/client-secret" --config "$config" -r '"$KEYCLOAK_REALM"' \
+            --fields value --format csv --noquotes
+    ')" || {
+        warn "Fant ikke hemmeligheten til marketplace-provisioner i Keycloak. \
+Godkjenning av selgersøknader vil feile. Finnes realmet fra før uten klienten, \
+kjør 'scripts/demo.sh wipe && scripts/demo.sh up' for å importere realmet på nytt."
+        return 0
+    }
+    secret="$(printf '%s' "$secret" | tr -d '\r\n')"
+    [[ -n "$secret" ]] || { warn "Keycloak returnerte en tom klienthemmelighet."; return 0; }
+
+    (umask 077 && touch .env)
+    set_env_value KEYCLOAK_ADMIN_ENABLED true
+    set_env_value KEYCLOAK_ADMIN_BASE_URL "$KEYCLOAK_URL"
+    set_env_value KEYCLOAK_ADMIN_REALM "$KEYCLOAK_REALM"
+    set_env_value KEYCLOAK_ADMIN_CLIENT_ID marketplace-provisioner
+    set_env_value KEYCLOAK_ADMIN_CLIENT_SECRET "$secret"
+    log "Synkroniserte hemmeligheten til marketplace-provisioner fra Keycloak til .env."
+}
+
+set_env_value() {
+    local key="$1" value="$2" tmp
+    tmp="$(mktemp "$RUN_DIR/env.XXXXXX")"
+    awk -v key="$key" -v value="$value" '
+        index($0, key "=") == 1 { print key "=" value; found = 1; next }
+        { print }
+        END { if (!found) print key "=" value }
+    ' .env > "$tmp"
+    chmod 600 "$tmp"
+    mv "$tmp" .env
+}
+
 start_app() {
     if app_pid_alive; then
         log "App kjører allerede (PID $(cat "$PID_FILE"))."
@@ -106,6 +158,8 @@ start_app() {
 Bruk 'scripts/demo.sh restart' for full kontroll neste gang."
         return 0
     fi
+
+    sync_provisioner_secret
 
     if [[ -f .env ]]; then
         set -a

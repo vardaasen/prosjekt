@@ -73,10 +73,16 @@ til `/innlogging-feilet`, uten tekniske feildetaljer.
 
 ## Keycloak-rolletildeling per miljø
 
-Før en administrator kan godkjenne søknader i et miljø, må drift opprette en
-egen konfidensiell Keycloak-klient med service account. Kontoen skal bare få
-rettighetene som trengs for å finne en bruker og tildele realmrollen `SELLER`
-(`view-users`, `manage-users` og `view-realm` i `realm-management`).
+Før en administrator kan godkjenne søknader i et miljø, må Keycloak ha en
+egen konfidensiell klient med service account som bare får rettighetene som
+trengs for å finne en bruker og tildele realmrollen `SELLER` (`view-users`,
+`manage-users` og `view-realm` i `realm-management`). I lokal utvikling er
+denne klienten (`marketplace-provisioner`) og rolletildelingen deklarert i
+`infra/keycloak/realm-havbruksbrukt.json` og opprettes automatisk når
+Keycloak importerer realmet (`compose.yaml` kjører `start-dev
+--import-realm`). Bare klienthemmeligheten er bevisst utelatt fra denne
+filen, se under. I andre miljøer må drift fortsatt opprette klienten selv med
+de samme rettighetene.
 
 Aktiver adapteren med hemmeligheter fra miljøets hemmelighetsforvaltning,
 aldri fra repository eller `application.properties`:
@@ -94,15 +100,39 @@ stabile bruker-ID, og tildeler bare `SELLER`. Den oppretter aldri `ADMIN`.
 
 ### Lokal ende-til-ende-test
 
-Den lokale service-kontoen konfigureres med en tilfeldig klienthemmelighet.
-Lagre den bare i den git-ignorerte `.env`-filen med eiertilgang. `scripts/demo.sh up`
-leser den automatisk; restart appen med `scripts/demo.sh restart` etter at
-`.env` er oppdatert.
+Klienten `marketplace-provisioner` opprettes automatisk ved import (se over),
+men uten en fast hemmelighet i filen. Keycloak genererer derfor en ny
+tilfeldig hemmelighet ved hver realm-import, f.eks. etter
+`scripts/demo.sh wipe`. `scripts/demo.sh up` og `restart` henter gjeldende
+hemmelighet fra Keycloak (med `kcadm.sh` inne i Keycloak-containeren) og
+skriver den til den git-ignorerte `.env`-filen med eiertilgang (`600`) før
+appen starter:
+
+```bash
+KEYCLOAK_ADMIN_ENABLED=true
+KEYCLOAK_ADMIN_BASE_URL=http://localhost:8180
+KEYCLOAK_ADMIN_REALM=havbruksbrukt
+KEYCLOAK_ADMIN_CLIENT_ID=marketplace-provisioner
+KEYCLOAK_ADMIN_CLIENT_SECRET=<synkronisert fra Keycloak>
+```
+
+Andre linjer i `.env` beholdes. Kjører appen fra IntelliJ (eller en annen
+kjøring utenfor `scripts/demo.sh`), kopier de samme variablene fra `.env`
+til kjørekonfigurasjonens miljøvariabler, og gjør det på nytt etter hver
+`wipe`.
 
 Etter restart kan `buyer-demo` sende en søknad og `admin-demo` godkjenne den.
 Logg deretter ut og inn igjen som samme identitet for at den nye
 `SELLER`-rollen skal være med i OIDC-sesjonen. Ikke legg `.env` eller
 klienthemmeligheten i repository.
+
+Hvis godkjenning likevel feiler med «Kunne ikke tildele selgerrollen akkurat
+nå»: sjekk applikasjonsloggen (`scripts/demo.sh logs` eller kjøringens
+konsoll) for linjen `Kunne ikke tildele SELLER-rollen for subject ... hos
+Keycloak: ...` - den viser den underliggende feilen (f.eks. `client_not_found`
+hvis klienten mangler i Keycloak, eller 403 hvis service-kontoen mangler en
+av de tre rollene over).
+
 
 ## Kjente fallgruver
 
@@ -136,7 +166,11 @@ klienthemmeligheten i repository.
   (`ApplicationConstants.REQUEST_TYPE_PARAMETER`): kontrolleren videresender
   dem til Vaadins egen `vaadinForwardingController`-bean i stedet for å
   rendre forsiden, og sikkerhetskonfigurasjonen unntar dem fra
-  CSRF-sjekken. Tidligere forsøk på å fikse dette
+  CSRF-sjekken. Unntaket bruker Vaadins `RequestUtil.isFrameworkInternalRequest`
+  og gjelder bare ekte interne forespørsler til servlet-roten (samt
+  `VAADIN/push` og `VAADIN/dynamic/...`). Et unntak for *enhver* forespørsel
+  med `v-r` lot f.eks. `POST /logout?v-r=x` og `POST /selgersoknad?v-r=x`
+  omgå CSRF-beskyttelsen. Tidligere forsøk på å fikse dette
   (`vaadin.eager-server-load=true`) flyttet bare symptomet fra grå skjerm
   til evig reconnect-løkke, uten å løse den underliggende
   sti-kollisjonen - denne innstillingen skal derfor IKKE settes.
@@ -151,13 +185,47 @@ klienthemmeligheten i repository.
   demoen — `scripts/demo.sh` bygger og starter appen med riktig,
   verifisert classpath.
 
+- **Utlogging er bare `POST /logout` med CSRF-token**: `GET /logout` logger
+  ikke ut. Ellers kunne et annet nettsted logge brukeren ut av både
+  markedsplassen og Keycloak-SSO-økten bare ved å lenke dit. «Logg ut» er
+  derfor et lite skjema: `LogoutForm` i Vaadin-flatene (`/admin`, `/app`)
+  og et Thymeleaf-skjema på `/selgersoknad`. Et skjema fanges heller ikke
+  opp av Vaadins klientsideruter, som tidligere ga «could not navigate to
+  logout» / «no route for logout» for en vanlig `<a href="/logout">`.
+  Å skrive `http://localhost:8080/logout` i adressefeltet logger derfor
+  ikke ut; bruk knappen.
+
+- **Logger ut og inn igjen som en annen demobruker uten at
+  Keycloak-innloggingsskjemaet vises**: Uten RP-initiated logout mot
+  Keycloak avslutter `/logout` bare den lokale Spring-økten - Keycloaks
+  egen SSO-økt (informasjonskapselen på `localhost:8180`) lever videre.
+  Neste innlogging gjenbruker da stille den forrige identiteten i stedet
+  for å vise skjemaet på nytt. `SecurityConfiguration` bruker nå
+  `OidcClientInitiatedLogoutSuccessHandler` slik at `/logout` også sender
+  brukeren via Keycloaks `end_session_endpoint`, som avslutter SSO-økten.
+
+- **Godkjenning av selgersøknad feiler med «Kunne ikke tildele
+  selgerrollen akkurat nå. Prøv igjen senere.»**: Sjekk først
+  applikasjonsloggen - `KeycloakSellerRoleProvisioner` logger nå den
+  underliggende Keycloak-feilen på ERROR-nivå (subject, statuskode/melding
+  og full stack trace) i stedet for å svelge den stille. Vanligste
+  årsaker lokalt: `marketplace-provisioner`-klienten finnes ikke ennå i
+  Keycloak (`client_not_found` - importer realmet på nytt med
+  `scripts/demo.sh wipe && scripts/demo.sh up`), eller
+  `KEYCLOAK_ADMIN_CLIENT_SECRET` samsvarer ikke med hemmeligheten i
+  Keycloak (401 `unauthorized_client` / «Invalid client credentials»).
+  Det siste skjer når realmet er importert på nytt, fordi Keycloak da
+  genererer en ny hemmelighet. `scripts/demo.sh restart` synkroniserer
+  hemmeligheten til `.env` på nytt; kjører appen utenfor skriptet, oppdater
+  miljøvariabelen fra `.env`.
+
 ## Produksjonsgrenser
 
 Compose-filen kjører Keycloak med `start-dev` og en lokal, ukryptert
 utviklingsdatabase. Produksjon må kjøre Keycloak separat med HTTPS, sikker
 hemmelighetsforvaltning, særskilt realm/klient, administratorkonto og
-produksjonsdatabase. Overstyr OIDC-endepunktene gjennom de dokumenterte
-`KEYCLOAK_*`-miljøvariablene; aldri legg produksjonsverdier i
+produksjonsdatabase. Overstyr OIDC discovery gjennom den dokumenterte
+`KEYCLOAK_ISSUER_URI`-miljøvariabelen; aldri legg produksjonsverdier i
 `application.properties`.
 
 Følg userflow 8, `docs/userflows/diagrams/08-operator-installs-and-bootstraps-environment.mmd`,
