@@ -36,7 +36,24 @@
       "attributes": {
         "pkce.code.challenge.method": "S256",
         "post.logout.redirect.uris": "http://localhost:8080/*"
-      }
+      },
+      "protocolMappers": [
+        {
+          "name": "realm-roles-in-id-token",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String"
+          }
+        }
+      ]
     }
   ],
   "users": [
@@ -44,6 +61,9 @@
       "username": "seller-demo",
       "enabled": true,
       "emailVerified": true,
+      "firstName": "Selger",
+      "lastName": "Demo",
+      "email": "seller-demo@havbruksbrukt.test",
       "realmRoles": [
         "SELLER"
       ],
@@ -59,6 +79,9 @@
       "username": "buyer-demo",
       "enabled": true,
       "emailVerified": true,
+      "firstName": "Kjøper",
+      "lastName": "Demo",
+      "email": "buyer-demo@havbruksbrukt.test",
       "realmRoles": [
         "BUYER"
       ],
@@ -74,6 +97,9 @@
       "username": "admin-demo",
       "enabled": true,
       "emailVerified": true,
+      "firstName": "Administrator",
+      "lastName": "Demo",
+      "email": "admin-demo@havbruksbrukt.test",
       "realmRoles": [
         "ADMIN"
       ],
