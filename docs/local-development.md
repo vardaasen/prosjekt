@@ -67,7 +67,7 @@ markerer søknaden som godkjent uten at `SELLER` faktisk er tildelt.
 Søknadssiden er server-rendered og skal derfor ikke vise Vaadins
 development-mode-klient.
 
-Prøv `seller-demo` på `/admin` for å verifisere at manglende administratorrolle
+Prøv `seller-demo` på `/app/admin` for å verifisere at manglende administratorrolle
 viser den brukervennlige 403-siden. Ved avbrutt OIDC-innlogging sendes brukeren
 til `/innlogging-feilet`, uten tekniske feildetaljer.
 
@@ -136,44 +136,23 @@ av de tre rollene over).
 
 ## Kjente fallgruver
 
-- **Grå «Vaadin dev mode»-skjerm med feiltekst etter innlogging**: Dette er
-  ikke en kompileringsfeil i appen, men Vaadins innebygde AI-utviklerverktøy
-  «Vaadin Copilot» (nytt i Vaadin 25, uavhengig av GitHub Copilot). Det
-  fanger opp JavaScript-feil i nettleseren og kan vise en fullskjerms grå
-  overlay over appen. Det er deaktivert i denne demoen via
-  `vaadin.copilot.enable=false` i `application.properties`. Hvis skjermen
-  likevel dukker opp: sjekk at appen er startet på nytt etter siste
-  `git pull`/endring (`scripts/demo.sh restart`), og at nettleseren ikke
-  har en gammel fane åpen fra før konfigurasjonen ble lagt til.
+- **Vaadin eier bare `/app`**: Vaadin er kartlagt på `/app/*`
+  (`vaadin.url-mapping`), med selgerområdet på `/app` og administrasjonen på
+  `/app/admin`. Offentlige sider på roten er Spring MVC/Thymeleaf
+  (beslutningsnotat 0002/0003). Tidligere lå Vaadin på roten (`/*`) og
+  kolliderte med forsiden på `/`: grå skjerm, evig «Connection lost»-løkke,
+  Vaadin-svar med 200 på ukjente offentlige stier, og en rekke workarounds
+  (`vaadin.eager-server-load`, `vaadin.copilot.enable=false`, videresending i
+  forsidekontrolleren og et eget CSRF-unntak for `v-r`). Alle er fjernet.
+  Ikke flytt Vaadin tilbake til roten.
 
-- **«Connection lost, trying to reconnect...» (evig løkke) eller grå/tom
-  skjerm på `/admin` eller `/app` etter innlogging**: Dette skyldes IKKE
-  Vaadins utviklerverktøy eller devmode-visning. Vaadin er kartlagt på
-  servlet-roten (`vaadin.url-mapping` er ikke satt, standard er `/*`), og
-  rammeverkets interne init/uidl/heartbeat-forespørsler sendes derfor alltid
-  til nøyaktig `/` - samme sti som den offentlige, Thymeleaf-rendrede
-  forsiden (`PublicMarketplaceController`). To uavhengige krasj kan oppstå
-  her samtidig:
-  - Spring MVCs `RequestMappingHandlerMapping` fanger opp Vaadins interne
-    GET-/POST-forespørsler til `/` FØR Vaadin selv får behandlet dem
-    (enten stille, med feil innhold, eller med 405 Method Not Allowed).
-  - Spring Securitys CSRF-beskyttelse blokkerer Vaadins interne
-    POST-forespørsler (uidl/heartbeat) fordi de ikke bærer et gyldig
-    CSRF-token.
-
-  Løsningen (i `PublicMarketplaceController` og `SecurityConfiguration`)
-  gjenkjenner Vaadins interne forespørsler på spørreparameteren `v-r`
-  (`ApplicationConstants.REQUEST_TYPE_PARAMETER`): kontrolleren videresender
-  dem til Vaadins egen `vaadinForwardingController`-bean i stedet for å
-  rendre forsiden, og sikkerhetskonfigurasjonen unntar dem fra
-  CSRF-sjekken. Unntaket bruker Vaadins `RequestUtil.isFrameworkInternalRequest`
-  og gjelder bare ekte interne forespørsler til servlet-roten (samt
-  `VAADIN/push` og `VAADIN/dynamic/...`). Et unntak for *enhver* forespørsel
-  med `v-r` lot f.eks. `POST /logout?v-r=x` og `POST /selgersoknad?v-r=x`
-  omgå CSRF-beskyttelsen. Tidligere forsøk på å fikse dette
-  (`vaadin.eager-server-load=true`) flyttet bare symptomet fra grå skjerm
-  til evig reconnect-løkke, uten å løse den underliggende
-  sti-kollisjonen - denne innstillingen skal derfor IKKE settes.
+- **Tilgang i Vaadin håndheves av `@RolesAllowed`**: `SecurityConfiguration`
+  bruker Vaadins `VaadinSecurityConfigurer`, som slår på Vaadins
+  navigasjonstilgangskontroll. Den er av som standard. URL-regler ser bare
+  første sidelasting; navigasjon inne i Vaadin går som interne forespørsler.
+  Uten tilgangskontrollen kunne en anonym bruker navigere klientside fra en
+  hvilken som helst Vaadin-side til administrasjonen. Nye Vaadin-visninger må
+  derfor alltid ha `@RolesAllowed`, `@PermitAll` eller `@AnonymousAllowed`.
 
 - **IntelliJ viser feil som «`org.springframework.transaction.annotation`
   does not exist»**: Dette er ikke en reell kompileringsfeil (`./mvnw
@@ -188,10 +167,8 @@ av de tre rollene over).
 - **Utlogging er bare `POST /logout` med CSRF-token**: `GET /logout` logger
   ikke ut. Ellers kunne et annet nettsted logge brukeren ut av både
   markedsplassen og Keycloak-SSO-økten bare ved å lenke dit. «Logg ut» er
-  derfor et lite skjema: `LogoutForm` i Vaadin-flatene (`/admin`, `/app`)
-  og et Thymeleaf-skjema på `/selgersoknad`. Et skjema fanges heller ikke
-  opp av Vaadins klientsideruter, som tidligere ga «could not navigate to
-  logout» / «no route for logout» for en vanlig `<a href="/logout">`.
+  derfor et lite skjema: `LogoutForm` i Vaadin-flatene (`/app/admin`, `/app`)
+  og et Thymeleaf-skjema på `/selgersoknad`.
   Å skrive `http://localhost:8080/logout` i adressefeltet logger derfor
   ikke ut; bruk knappen.
 
