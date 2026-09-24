@@ -12,4 +12,9 @@ flowchart TD
     L -- Nei --> M[Behold PENDING og vis eksplisitt feil]
     L -- Ja --> N[Opprett eller aktiver SellerAccount]
     N --> O[Lagre beslutning og auditlogg]
-    O --> P[Bruker logger inn som SELLER og åpner /app]
+    J --> Q{Flere ventende søknader?}
+    O --> Q
+    M --> Q
+    Q -- Ja --> H
+    Q -- Nei --> R[Administrator logger ut via lenken /logout i /admin]
+    O --> P[Bruker logger inn på nytt som SELLER og åpner /app]

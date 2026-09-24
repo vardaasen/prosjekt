@@ -116,6 +116,31 @@ klienthemmeligheten i repository.
   `git pull`/endring (`scripts/demo.sh restart`), og at nettleseren ikke
   har en gammel fane åpen fra før konfigurasjonen ble lagt til.
 
+- **«Connection lost, trying to reconnect...» (evig løkke) eller grå/tom
+  skjerm på `/admin` eller `/app` etter innlogging**: Dette skyldes IKKE
+  Vaadins utviklerverktøy eller devmode-visning. Vaadin er kartlagt på
+  servlet-roten (`vaadin.url-mapping` er ikke satt, standard er `/*`), og
+  rammeverkets interne init/uidl/heartbeat-forespørsler sendes derfor alltid
+  til nøyaktig `/` - samme sti som den offentlige, Thymeleaf-rendrede
+  forsiden (`PublicMarketplaceController`). To uavhengige krasj kan oppstå
+  her samtidig:
+  - Spring MVCs `RequestMappingHandlerMapping` fanger opp Vaadins interne
+    GET-/POST-forespørsler til `/` FØR Vaadin selv får behandlet dem
+    (enten stille, med feil innhold, eller med 405 Method Not Allowed).
+  - Spring Securitys CSRF-beskyttelse blokkerer Vaadins interne
+    POST-forespørsler (uidl/heartbeat) fordi de ikke bærer et gyldig
+    CSRF-token.
+
+  Løsningen (i `PublicMarketplaceController` og `SecurityConfiguration`)
+  gjenkjenner Vaadins interne forespørsler på spørreparameteren `v-r`
+  (`ApplicationConstants.REQUEST_TYPE_PARAMETER`): kontrolleren videresender
+  dem til Vaadins egen `vaadinForwardingController`-bean i stedet for å
+  rendre forsiden, og sikkerhetskonfigurasjonen unntar dem fra
+  CSRF-sjekken. Tidligere forsøk på å fikse dette
+  (`vaadin.eager-server-load=true`) flyttet bare symptomet fra grå skjerm
+  til evig reconnect-løkke, uten å løse den underliggende
+  sti-kollisjonen - denne innstillingen skal derfor IKKE settes.
+
 - **IntelliJ viser feil som «`org.springframework.transaction.annotation`
   does not exist»**: Dette er ikke en reell kompileringsfeil (`./mvnw
   compile`/`verify` bekrefter dette gjentatte ganger), men et tegn på at
