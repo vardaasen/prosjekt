@@ -20,6 +20,9 @@ Dette er en prototype-baseline, ikke en full sikkerhetssertifisering. Punktene s
   et `DRAFT` med både slug og den innloggede selgerkontoens OIDC-subject.
   Optimistisk låsing avviser konkurrerende endringer i stedet for å
   overskrive dem.
+- **Administrasjon:** `ADMIN` er en markedsplassrolle, avgrenset fra
+  Keycloaks plattformadministrator. Beslutning 0006 fastsetter at nye
+  identiteter ikke kan få `SELLER` eller `ADMIN` ved selvregistrering.
 - **Server-rendering:** Offentlige sider rendres på serveren; ingen brukerinput settes inn som rå HTML.
 - **Thymeleaf escaping:** Tekst fra listingdata går via `th:text`, som reduserer XSS-risiko.
 - **Inputkontroll:** `tilstand` avvises med `400` når verdien ikke er en kjent enum.
@@ -45,6 +48,13 @@ Dette er en prototype-baseline, ikke en full sikkerhetssertifisering. Punktene s
 - Keycloak er valgt som OIDC-leverandør. Lokal Compose-konfigurasjon bruker
   demo-realm og demo-brukere bare for utvikling; produksjon må bruke en
   separat realm, registrert klient, hemmelighetsforvaltning og administratorkonto.
+- Opprett første markedsplassadministrator med en kontrollert miljø-bootstrap,
+  utenfor appens HTTP-grensesnitt og repository. Bruk deretter minst to
+  navngitte administratorer i produksjon for å unngå personavhengig tilgang.
+- Ikke aktiver Keycloaks selvregistrering før e-postverifisering,
+  selgersøknader med `PENDING`-status, server-side `ADMIN`-autorisasjon,
+  auditlogg og en minst-privilegert Keycloak service-konto for rolletildeling
+  er implementert og testet.
 - Håndhev autorisasjon server-side på hver selgeroperasjon; skjult navigasjon er ikke tilgangskontroll.
 - La hver annonse referere til sin `SellerAccount` før utkastflyten innføres,
   og slå opp eieren på serveren ved redigering, publisering og arkivering.
@@ -74,6 +84,7 @@ Dette er en prototype-baseline, ikke en full sikkerhetssertifisering. Punktene s
 | --- | --- | --- |
 | Høy | Konfigurert base-URL og trusted proxy-oppsett | Før sitemap/canonical går til staging |
 | Høy | Autorisasjon for hver selgeroperasjon, CSRF og session-policy | Før `/app` får muterende funksjoner |
+| Høy | Kontrollert administrator-bootstrap og godkjenning av selgersøknader | Før selvregistrering aktiveres |
 | Høy | Persistens med publiseringsstatus og server-side autorisasjon | Før selgerflyt |
 | Medium | Inputgrenser, rate limiting og auditlogg | Før ekstern testbruk |
 | Medium | Opplastingssikkerhet | Før bilder/dokumenter |

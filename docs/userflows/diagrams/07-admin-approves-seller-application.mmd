@@ -1,0 +1,14 @@
+flowchart TD
+    A[Ny identitet registrerer seg hos Keycloak] --> B[E-post verifisert]
+    B --> C[Sender selgersøknad med virksomhetsopplysninger]
+    C --> D[Lagre søknad som PENDING uten SELLER-rolle]
+    D --> E[Markedsplassadministrator åpner /admin]
+    E --> F{Har brukeren ADMIN-rolle?}
+    F -- Nei --> G[Avvis tilgang]
+    F -- Ja --> H[Vurderer virksomhetsopplysninger]
+    H --> I{Godkjenn søknad?}
+    I -- Nei --> J[Avslå søknad og lagre auditlogg]
+    I -- Ja --> K[Tildel SELLER via minst privilegerte Keycloak service-konto]
+    K --> L[Opprett eller aktiver SellerAccount]
+    L --> M[Lagre beslutning og auditlogg]
+    M --> N[Bruker logger inn som SELLER og åpner /app]

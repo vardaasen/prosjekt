@@ -23,6 +23,7 @@ beskriver et bredere målbilde enn den implementerte prototypen.
 | 3. Browse/filter til listedetalj | Delvis | Katalog, fritekst, lokasjon, tilstand, nulltreff og detaljside | Prisfilter og kategori-URL-er |
 | 4. Listedetalj til forespørsel eller lagring | Delvis | Publisert detaljside med selger- og dokumentasjonsdata | Forespørsel, lagring, kjøperinnlogging og retur-URL |
 | 5. Selger starter fra offentlig side | Delvis | Keycloak-innlogging, `SELLER`-krav på `/app`, privat opprettelse av utkast og publisering | `/selg`, bilder, dokumenter, redigering og arkivering |
+| 7. Administrator godkjenner selgersøknad | Planlagt | Beslutningsgrense for roller og bootstrap | Selgersøknad, `/admin`, auditlogg og trygg Keycloak-administrasjonsintegrasjon |
 
 Diagram 6 dekker den implementerte selgerflyten som ikke fantes da de
 opprinnelige diagrammene ble laget.
@@ -158,4 +159,23 @@ flowchart TD
     M -- Nei --> N[Avvis publisering]
     M -- Ja --> O[Sett PUBLISHED og publiseringsdato]
     O --> P[Vises i offentlig katalog, detaljside og sitemap]
+```
+
+## 7. Administrator godkjenner selgersøknad
+
+```mermaid
+flowchart TD
+    A[Ny identitet registrerer seg hos Keycloak] --> B[E-post verifisert]
+    B --> C[Sender selgersøknad med virksomhetsopplysninger]
+    C --> D[Lagre søknad som PENDING uten SELLER-rolle]
+    D --> E[Markedsplassadministrator åpner /admin]
+    E --> F{Har brukeren ADMIN-rolle?}
+    F -- Nei --> G[Avvis tilgang]
+    F -- Ja --> H[Vurderer virksomhetsopplysninger]
+    H --> I{Godkjenn søknad?}
+    I -- Nei --> J[Avslå søknad og lagre auditlogg]
+    I -- Ja --> K[Tildel SELLER via minst privilegerte Keycloak service-konto]
+    K --> L[Opprett eller aktiver SellerAccount]
+    L --> M[Lagre beslutning og auditlogg]
+    M --> N[Bruker logger inn som SELLER og åpner /app]
 ```

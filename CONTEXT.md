@@ -21,6 +21,18 @@ selger. Kontoen eier fremtidige utkast og annonser; den inneholder ikke
 passord eller andre identitetsleverandørdata.
 _Avoid_: Brukerkonto, Keycloak-bruker
 
+**Selgersøknad**:
+En virksomhets forespørsel om å bli selger. Søknaden venter på
+markedsplassadministratorens vurdering og gir ikke publiseringsrettigheter
+før den er godkjent.
+_Avoid_: Selvregistrert selger, automatisk godkjenning
+
+**Markedsplassadministrator**:
+En autorisert markedsplassbruker som vurderer selgersøknader og håndhever
+forretningsmessige regler. Rollen er forskjellig fra en
+Keycloak-plattformadministrator.
+_Avoid_: Keycloak-admin, superbruker
+
 **Kjøper**:
 Virksomheten som vurderer utstyr i markedsplassen, uavhengig av om den ender
 med å kjøpe.

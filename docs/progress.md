@@ -42,6 +42,9 @@ Sist oppdatert: 2026-09-24
 - Fullført første selgerflyt fra utkast til publisert annonse. Publisering
   kontrollerer eierskap på serveren og gjør deretter annonsen synlig i den
   eksisterende offentlige katalogen, detaljsiden og sitemapet.
+- Besluttet sikker administrator- og selgergodkjenningsflyt: Keycloak-
+  plattformadministrator og markedsplassens `ADMIN`-rolle er separate; nye
+  identiteter får ingen publiseringsrettigheter uten godkjenning.
 
 ## Nåværende arkitektur
 
@@ -51,6 +54,7 @@ Sist oppdatert: 2026-09-24
 | Innlogget appflate | Vaadin Flow + Keycloak OIDC under `/app` | Krever `SELLER`; minimal startflate |
 | Data | PostgreSQL + Flyway + JPA Data Mapper | Aktiv katalogadapter; in-memory-adapter beholdes for enhetstester |
 | Identitet og tilgang | Keycloak OIDC + Spring Security | Lokal demo-realm; produksjonskonfigurasjon gjenstår |
+| Administrator og godkjenning | Beslutning 0006 + userflow 7 | Ikke implementert; må være på plass før selvregistrering |
 | Selgereierskap | `SellerAccount` + Flyway V4 | Utkast eies og listes per selgerkonto |
 | Designkilde | Eksisterende designmanual + mockups | Figma-designsystem skal formaliseres |
 
@@ -75,9 +79,11 @@ Sist oppdatert: 2026-09-24
    `PUBLISHED`-annonser; utkast og arkiverte annonser skal gi 404 offentlig.
 2. Opprett Figma-artefakt for offentlig katalog, annonsedetalj og
    selgerinngang basert på eksisterende designmanual.
-3. Implementer redigering og arkivering av egne annonser med server-side
+3. Implementer selgersøknad, administratorflate, auditlogg og trygg
+   rolletildeling før selvregistrering aktiveres.
+4. Implementer redigering og arkivering av egne annonser med server-side
    eierskapskontroll.
-4. Koble kontaktforespørsel fra offentlig annonsedetalj til autentisert eller
+5. Koble kontaktforespørsel fra offentlig annonsedetalj til autentisert eller
    eksplisitt gjesteprosess.
 
 ## Neste naturlige steg
