@@ -1,7 +1,6 @@
 package no.fagskolen.prosjekt.admin;
 
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
@@ -16,6 +15,7 @@ import no.fagskolen.prosjekt.marketplace.applications.SellerApplications;
 import no.fagskolen.prosjekt.marketplace.applications.SellerRoleProvisioningException;
 import no.fagskolen.prosjekt.marketplace.domain.SellerApplication;
 import no.fagskolen.prosjekt.marketplace.domain.SellerApplicationAuditEntry;
+import no.fagskolen.prosjekt.security.LogoutForm;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
@@ -48,18 +48,11 @@ public class AdminWorkspaceView extends VerticalLayout {
                 .setHeader("Revisjonsspor");
         refresh(pendingApplications, sellerApplications);
 
-        var logout = new Anchor("/logout", "Logg ut");
-        // Vaadin sitt klientsideruter fanger opp alle anker-klikk og prøver å
-        // navigere til dem som en Vaadin-rute ("Could not navigate to
-        // 'logout'"). router-ignore ber ruteren la nettleseren gjøre en vanlig
-        // full sideinnlasting til /logout i stedet.
-        logout.getElement().setAttribute("router-ignore", "");
-
         setSpacing(true);
         setPadding(true);
         add(
                 new H1("Administrasjon"),
-                logout,
+                new LogoutForm(),
                 new Paragraph("Vurder selgersøknader. Godkjenning tildeler ikke rettigheter før Keycloak har bekreftet SELLER-rollen."),
                 new Paragraph("Ventende selgersøknader"),
                 pendingApplications);

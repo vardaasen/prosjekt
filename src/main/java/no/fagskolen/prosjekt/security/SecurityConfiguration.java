@@ -2,7 +2,6 @@ package no.fagskolen.prosjekt.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,7 +12,6 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
-import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 import com.vaadin.flow.shared.ApplicationConstants;
 
@@ -54,10 +52,10 @@ class SecurityConfiguration {
                 .exceptionHandling(exceptionHandling -> exceptionHandling
                         .accessDeniedPage("/tilgang-nektet"))
                 .logout(logout -> logout
-                        // Enkel lenke-basert utlogging i Vaadin og server-renderte sider:
-                        // GET er ikke CSRF-beskyttet i utgangspunktet, så dette holder
-                        // utloggingen konsistent på tvers av begge UI-lagene i demoen.
-                        .logoutRequestMatcher(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/logout"))
+                        // Standard Spring Security-utlogging: bare POST /logout med
+                        // CSRF-token. GET-utlogging ville latt et annet nettsted logge
+                        // brukeren ut av både markedsplassen og Keycloak-SSO-økten.
+                        // Vaadin-flatene bruker LogoutForm, Thymeleaf-sidene et skjema.
                         // Uten RP-initiated logout mot Keycloak overlever Keycloaks
                         // egen SSO-økt selv om den lokale Spring-økten avsluttes: neste
                         // innlogging (f.eks. som en annen demobruker) hopper stille over

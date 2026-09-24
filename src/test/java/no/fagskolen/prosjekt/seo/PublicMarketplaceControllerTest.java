@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.OidcLoginRequestPostProcessor;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -139,11 +140,34 @@ class PublicMarketplaceControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("<h1>Søk som selger</h1>")))
                 .andExpect(content().string(containsString("name=\"sellerName\"")))
+                .andExpect(content().string(containsString("<form method=\"post\" action=\"/logout\">")))
+                .andExpect(content().string(not(containsString("href=\"/logout\""))))
                 .andExpect(content().string(not(containsString("vaadin-"))));
     }
 
     @Test
     void redirectsOidcLogoutThroughKeycloakEndSessionEndpoint() throws Exception {
+        mockMvc.perform(post("/logout").with(keycloakOidcLogin()).with(csrf()))
+                .andExpect(status().isFound())
+                .andExpect(header().string("Location", containsString(
+                        "http://localhost:8180/realms/havbruksbrukt/protocol/openid-connect/logout")))
+                .andExpect(header().string("Location", containsString("post_logout_redirect_uri=http://localhost/")))
+                .andExpect(header().string("Location", containsString("id_token_hint=")));
+    }
+
+    @Test
+    void rejectsLogoutWithoutCsrfToken() throws Exception {
+        mockMvc.perform(post("/logout").with(keycloakOidcLogin()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void doesNotLogOutOnCrossSiteGetNavigation() throws Exception {
+        mockMvc.perform(get("/logout").with(keycloakOidcLogin()))
+                .andExpect(header().doesNotExist("Location"));
+    }
+
+    private static OidcLoginRequestPostProcessor keycloakOidcLogin() {
         var loginRegistration = ClientRegistration.withRegistrationId("keycloak")
                 .clientId("marketplace")
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
@@ -156,14 +180,9 @@ class PublicMarketplaceControllerTest {
                 .userNameAttributeName(IdTokenClaimNames.SUB)
                 .build();
 
-        mockMvc.perform(get("/logout").with(oidcLogin()
-                        .clientRegistration(loginRegistration)
-                        .idToken(token -> token.subject("buyer-subject"))))
-                .andExpect(status().isFound())
-                .andExpect(header().string("Location", containsString(
-                        "http://localhost:8180/realms/havbruksbrukt/protocol/openid-connect/logout")))
-                .andExpect(header().string("Location", containsString("post_logout_redirect_uri=http://localhost/")))
-                .andExpect(header().string("Location", containsString("id_token_hint=")));
+        return oidcLogin()
+                .clientRegistration(loginRegistration)
+                .idToken(token -> token.subject("buyer-subject"));
     }
 
     @Test

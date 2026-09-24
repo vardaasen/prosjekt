@@ -180,17 +180,15 @@ av de tre rollene over).
   demoen — `scripts/demo.sh` bygger og starter appen med riktig,
   verifisert classpath.
 
-- **`http://localhost:8080/logout` gir «could not navigate to logout» /
-  «no route for logout» når lenken «Logg ut» trykkes inne i `/admin` eller
-  `/app`**: Dette er IKKE en manglende `/logout`-rute i Spring Security
-  (`SecurityConfiguration` håndterer `GET /logout` korrekt). Vaadins
-  klientsideruter fanger opp alle anker-klikk (`<a href="...">`) og prøver
-  først å tolke målet som en Vaadin-rute, siden Vaadin ikke vet at
-  `/logout` er en server-håndtert Spring Security-rute utenfor
-  Vaadin-appen. Løsningen er attributtet `router-ignore` på
-  utloggingslenken (satt i `AdminWorkspaceView` og `SellerWorkspaceView`),
-  som ber Vaadin gjøre en vanlig full sideinnlasting i stedet for å
-  navigere internt.
+- **Utlogging er bare `POST /logout` med CSRF-token**: `GET /logout` logger
+  ikke ut. Ellers kunne et annet nettsted logge brukeren ut av både
+  markedsplassen og Keycloak-SSO-økten bare ved å lenke dit. «Logg ut» er
+  derfor et lite skjema: `LogoutForm` i Vaadin-flatene (`/admin`, `/app`)
+  og et Thymeleaf-skjema på `/selgersoknad`. Et skjema fanges heller ikke
+  opp av Vaadins klientsideruter, som tidligere ga «could not navigate to
+  logout» / «no route for logout» for en vanlig `<a href="/logout">`.
+  Å skrive `http://localhost:8080/logout` i adressefeltet logger derfor
+  ikke ut; bruk knappen.
 
 - **Logger ut og inn igjen som en annen demobruker uten at
   Keycloak-innloggingsskjemaet vises**: Uten RP-initiated logout mot
