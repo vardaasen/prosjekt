@@ -26,6 +26,7 @@ class SecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/app", "/app/**").hasRole("SELLER")
                         .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/selgersoknad", "/selgersoknad/**").authenticated()
                         .anyRequest().permitAll())
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo

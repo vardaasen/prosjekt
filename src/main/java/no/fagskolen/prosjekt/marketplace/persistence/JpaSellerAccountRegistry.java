@@ -27,4 +27,15 @@ class JpaSellerAccountRegistry implements SellerAccountRegistry {
                 account.oidcSubject(),
                 new Seller(account.sellerName(), account.verifiedSeller(), account.sellerLocation()));
     }
+
+    @Override
+    @Transactional
+    public SellerAccount activateSellerAccount(String oidcSubject, Seller seller) {
+        var account = sellerAccounts.findById(oidcSubject)
+                .orElseGet(() -> sellerAccounts.save(new SellerAccountJpaEntity(oidcSubject, seller.name())));
+        account.activate(seller.name(), seller.location());
+        return new SellerAccount(
+                account.oidcSubject(),
+                new Seller(account.sellerName(), account.verifiedSeller(), account.sellerLocation()));
+    }
 }

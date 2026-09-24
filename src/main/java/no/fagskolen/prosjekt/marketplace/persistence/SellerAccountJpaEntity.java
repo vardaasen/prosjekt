@@ -47,4 +47,10 @@ class SellerAccountJpaEntity {
     String sellerLocation() {
         return sellerLocation;
     }
+
+    void activate(String sellerName, String sellerLocation) {
+        this.sellerName = sellerName;
+        this.sellerLocation = sellerLocation;
+        this.verifiedSeller = true;
+    }
 }

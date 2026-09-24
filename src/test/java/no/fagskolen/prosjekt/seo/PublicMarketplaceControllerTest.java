@@ -110,6 +110,13 @@ class PublicMarketplaceControllerTest {
     }
 
     @Test
+    void redirectsAnonymousSellerApplicationRequestsToKeycloak() throws Exception {
+        mockMvc.perform(get("/selgersoknad"))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("/oauth2/authorization/keycloak"));
+    }
+
+    @Test
     void preventsSellersFromOpeningTheAdministrationWorkspace() throws Exception {
         mockMvc.perform(get("/admin").with(user("seller").roles("SELLER")))
                 .andExpect(status().isForbidden());

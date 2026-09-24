@@ -23,6 +23,14 @@ Dette er en prototype-baseline, ikke en full sikkerhetssertifisering. Punktene s
 - **Administrasjon:** `ADMIN` er en markedsplassrolle, avgrenset fra
   Keycloaks plattformadministrator. Beslutning 0006 fastsetter at nye
   identiteter ikke kan få `SELLER` eller `ADMIN` ved selvregistrering.
+- **Selgersøknader:** En innlogget OIDC-identitet kan opprette en vedvarende
+  `PENDING`-søknad. Bare `/admin` med `ADMIN` kan godkjenne eller avslå den.
+  Avslag krever begrunnelse; innsendelse og beslutninger har append-only
+  auditspor med actor subject og tidspunkt.
+- **Rolletildeling:** Godkjenning forsøker først å tildele `SELLER` via en
+  konfigurerbar, minst-privilegert Keycloak service-konto. Uten konfigurert
+  adapter eller ved Keycloak-feil avbrytes transaksjonen og søknaden forblir
+  `PENDING`; ingen suksess-svar eller kontoaktivering produseres.
 - **Server-rendering:** Offentlige sider rendres på serveren; ingen brukerinput settes inn som rå HTML.
 - **Thymeleaf escaping:** Tekst fra listingdata går via `th:text`, som reduserer XSS-risiko.
 - **Inputkontroll:** `tilstand` avvises med `400` når verdien ikke er en kjent enum.
@@ -51,10 +59,9 @@ Dette er en prototype-baseline, ikke en full sikkerhetssertifisering. Punktene s
 - Opprett første markedsplassadministrator med en kontrollert miljø-bootstrap,
   utenfor appens HTTP-grensesnitt og repository. Bruk deretter minst to
   navngitte administratorer i produksjon for å unngå personavhengig tilgang.
-- Ikke aktiver Keycloaks selvregistrering før e-postverifisering,
-  selgersøknader med `PENDING`-status, server-side `ADMIN`-autorisasjon,
-  auditlogg og en minst-privilegert Keycloak service-konto for rolletildeling
-  er implementert og testet.
+- Ikke aktiver Keycloaks selvregistrering før e-postverifisering, rate
+  limiting, søknadsvalidering og den minst-privilegerte Keycloak
+  service-kontoen er konfigurert og verifisert i hvert miljø.
 - Håndhev autorisasjon server-side på hver selgeroperasjon; skjult navigasjon er ikke tilgangskontroll.
 - La hver annonse referere til sin `SellerAccount` før utkastflyten innføres,
   og slå opp eieren på serveren ved redigering, publisering og arkivering.
