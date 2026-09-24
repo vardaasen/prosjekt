@@ -55,6 +55,17 @@ class PublicMarketplaceControllerTest {
     }
 
     @Test
+    void rendersSellerEntryPageWithClearAccountAndLoginGuidance() throws Exception {
+        mockMvc.perform(get("/selg"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Har du allerede en konto?")))
+                .andExpect(content().string(containsString("href=\"/selgersoknad\"")))
+                .andExpect(content().string(containsString("Selvregistrering er ikke åpnet ennå.")))
+                .andExpect(content().string(containsString(
+                        "<meta name=\"robots\" content=\"noindex,follow\">")));
+    }
+
+    @Test
     void doesNotUseUntrustedHostHeaderForCanonicalUrl() throws Exception {
         mockMvc.perform(get("/utstyr").header("Host", "evil.example"))
                 .andExpect(status().isOk())

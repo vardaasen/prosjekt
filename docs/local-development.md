@@ -28,6 +28,13 @@ demo-selgeren:
 brukerne og administratorpassordets Compose-standardverdi er kun for lokal
 utvikling. De må ikke brukes eller importeres til staging eller produksjon.
 
+Den offentlige inngangen `http://localhost:8080/selg` forklarer
+selgerreisen og leder en eksisterende bruker til innlogging og
+`/selgersoknad`. Keycloaks selvregistrering er med hensikt ikke aktivert i
+den lokale realm-importen: uten e-postleveranse/verifisering og rate limiting
+skal det ikke være mulig å opprette vilkårlige kontoer. Logg inn som
+`buyer-demo` for å teste selgersøknaden.
+
 Den lokale markedsplassadministratoren er separat fra Keycloaks
 bootstrap-administrator:
 

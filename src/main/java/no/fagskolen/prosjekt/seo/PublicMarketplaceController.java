@@ -83,6 +83,15 @@ public class PublicMarketplaceController {
         return "listing";
     }
 
+    @GetMapping("/selg")
+    public String sell(Model model) {
+        model.addAttribute("title", "Selg utstyr");
+        model.addAttribute("description", "Søk om å selge brukt akvakulturutstyr på Havbruksbrukt.");
+        model.addAttribute("robots", "noindex,follow");
+        model.addAttribute("canonicalUrl", absoluteUrl("/selg"));
+        return "sell";
+    }
+
     @GetMapping(value = "/robots.txt", produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> robots() {
         return ResponseEntity.ok("""

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="no" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${title}">Selg utstyr</title>
+  <meta name="description" th:content="${description}">
+  <meta name="robots" th:content="${robots}">
+  <link rel="canonical" th:href="${canonicalUrl}">
+  <link rel="stylesheet" href="/styles/site.css">
+</head>
+<body>
+<header class="shell topbar">
+  <a class="brand" href="/">Havbruksbrukt</a>
+  <nav aria-label="Hovedmeny">
+    <a href="/utstyr">Utforsk utstyr</a>
+    <a href="/selg" aria-current="page">Selg utstyr</a>
+  </nav>
+</header>
+<main class="shell">
+  <section class="hero">
+    <p class="eyebrow">For virksomheter</p>
+    <h1>Selg brukt akvakulturutstyr</h1>
+    <p>Selgerrettigheter gis først etter at en markedsplassadministrator har vurdert søknaden.</p>
+  </section>
+  <section class="cards" aria-label="Velg neste steg">
+    <article class="card">
+      <h2>Har du allerede en konto?</h2>
+      <p>Logg inn for å sende eller følge opp en selgersøknad. Godkjente selgere kan opprette annonser.</p>
+      <a class="button" href="/selgersoknad">Logg inn</a>
+    </article>
+    <article class="card">
+      <h2>Trenger virksomheten en konto?</h2>
+      <p>Selvregistrering er ikke åpnet ennå. Den aktiveres først når e-postverifisering og misbruksbeskyttelse er konfigurert.</p>
+      <p>Kontakt markedsplassadministratoren for kontrollert opprettelse av konto.</p>
+    </article>
+  </section>
+</main>
+</body>
+</html>
