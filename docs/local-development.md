@@ -104,6 +104,28 @@ Logg deretter ut og inn igjen som samme identitet for at den nye
 `SELLER`-rollen skal være med i OIDC-sesjonen. Ikke legg `.env` eller
 klienthemmeligheten i repository.
 
+## Kjente fallgruver
+
+- **Grå «Vaadin dev mode»-skjerm med feiltekst etter innlogging**: Dette er
+  ikke en kompileringsfeil i appen, men Vaadins innebygde AI-utviklerverktøy
+  «Vaadin Copilot» (nytt i Vaadin 25, uavhengig av GitHub Copilot). Det
+  fanger opp JavaScript-feil i nettleseren og kan vise en fullskjerms grå
+  overlay over appen. Det er deaktivert i denne demoen via
+  `vaadin.copilot.enable=false` i `application.properties`. Hvis skjermen
+  likevel dukker opp: sjekk at appen er startet på nytt etter siste
+  `git pull`/endring (`scripts/demo.sh restart`), og at nettleseren ikke
+  har en gammel fane åpen fra før konfigurasjonen ble lagt til.
+
+- **IntelliJ viser feil som «`org.springframework.transaction.annotation`
+  does not exist»**: Dette er ikke en reell kompileringsfeil (`./mvnw
+  compile`/`verify` bekrefter dette gjentatte ganger), men et tegn på at
+  IntelliJ aldri har importert prosjektet som et Maven-modul (ingen
+  `.iml`-fil i `.idea/`). Løsning: åpne Maven-verktøyvinduet i IntelliJ og
+  trykk «Reload All Maven Projects» (eller høyreklikk `pom.xml` → Add as
+  Maven Project). Du trenger ikke kjøre appen fra IntelliJ for å teste
+  demoen — `scripts/demo.sh` bygger og starter appen med riktig,
+  verifisert classpath.
+
 ## Produksjonsgrenser
 
 Compose-filen kjører Keycloak med `start-dev` og en lokal, ukryptert
