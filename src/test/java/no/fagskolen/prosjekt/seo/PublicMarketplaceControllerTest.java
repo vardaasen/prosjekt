@@ -16,6 +16,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -159,6 +160,31 @@ class PublicMarketplaceControllerTest {
     void rejectsLogoutWithoutCsrfToken() throws Exception {
         mockMvc.perform(post("/logout").with(keycloakOidcLogin()))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void rejectsLogoutWithVaadinRequestTypeParameterButNoCsrfToken() throws Exception {
+        mockMvc.perform(post("/logout?v-r=uidl").with(keycloakOidcLogin()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void rejectsSellerApplicationWithVaadinRequestTypeParameterButNoCsrfToken() throws Exception {
+        mockMvc.perform(post("/selgersoknad?v-r=uidl")
+                        .with(oidcLogin().idToken(token -> token.subject("forged-subject")))
+                        .param("sellerName", "Forfalsket AS")
+                        .param("sellerLocation", "Narvik"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void keepsVaadinInternalRequestsToServletRootExemptFromSpringCsrf() throws Exception {
+        // Vaadin beskytter sine egne UIDL-forespørsler med egen sikkerhetsnøkkel.
+        // Blokkerer Spring CSRF dem, oppstår "Connection lost"-løkken fra PR #1.
+        // MockMvc har ingen Vaadin-servlet, så at forespørselen videresendes dit
+        // (og feiler) viser at Spring Security slapp den gjennom uten CSRF-token.
+        assertThatThrownBy(() -> mockMvc.perform(post("/?v-r=uidl").with(keycloakOidcLogin())))
+                .hasMessageContaining("springServlet");
     }
 
     @Test

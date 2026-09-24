@@ -166,7 +166,11 @@ av de tre rollene over).
   (`ApplicationConstants.REQUEST_TYPE_PARAMETER`): kontrolleren videresender
   dem til Vaadins egen `vaadinForwardingController`-bean i stedet for å
   rendre forsiden, og sikkerhetskonfigurasjonen unntar dem fra
-  CSRF-sjekken. Tidligere forsøk på å fikse dette
+  CSRF-sjekken. Unntaket bruker Vaadins `RequestUtil.isFrameworkInternalRequest`
+  og gjelder bare ekte interne forespørsler til servlet-roten (samt
+  `VAADIN/push` og `VAADIN/dynamic/...`). Et unntak for *enhver* forespørsel
+  med `v-r` lot f.eks. `POST /logout?v-r=x` og `POST /selgersoknad?v-r=x`
+  omgå CSRF-beskyttelsen. Tidligere forsøk på å fikse dette
   (`vaadin.eager-server-load=true`) flyttet bare symptomet fra grå skjerm
   til evig reconnect-løkke, uten å løse den underliggende
   sti-kollisjonen - denne innstillingen skal derfor IKKE settes.

@@ -13,7 +13,7 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
-import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.spring.security.RequestUtil;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -27,17 +27,18 @@ class SecurityConfiguration {
     SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             GrantedAuthoritiesMapper keycloakRoleMapper,
-            ClientRegistrationRepository clientRegistrationRepository) throws Exception {
+            ClientRegistrationRepository clientRegistrationRepository,
+            RequestUtil vaadinRequestUtil) throws Exception {
         http
                 // Vaadin er kartlagt på servlet-roten (vaadin.url-mapping="/*", standard),
-                // så rammeverkets interne init/uidl/heartbeat-forespørsler (markert med
-                // spørreparameteren "v-r") sendes uten CSRF-token slik Vaadins klient selv
-                // håndterer det internt. Uten dette unntaket blokkerer Spring Securitys
-                // CSRF-filter disse forespørslene før de når kontrolleren, som viste seg
-                // som en evig "Connection lost"-reconnect-løkke etter innlogging på
-                // /admin og /app. Se docs/local-development.md.
-                .csrf(csrf -> csrf.ignoringRequestMatchers(request ->
-                        request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER) != null))
+                // og rammeverkets interne init/uidl/heartbeat-forespørsler beskyttes av
+                // Vaadins egen sikkerhetsnøkkel, ikke Spring Securitys CSRF-token. Uten
+                // unntak blokkeres de og gir en evig "Connection lost"-reconnect-løkke
+                // på /admin og /app. Unntaket må bare gjelde ekte Vaadin-interne
+                // forespørsler (servlet-roten med v-r, VAADIN/push, VAADIN/dynamic):
+                // et unntak for enhver forespørsel med v-r lot f.eks.
+                // POST /logout?v-r=x omgå CSRF. Se docs/local-development.md.
+                .csrf(csrf -> csrf.ignoringRequestMatchers(vaadinRequestUtil::isFrameworkInternalRequest))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/app", "/app/**").hasRole("SELLER")
                         .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
