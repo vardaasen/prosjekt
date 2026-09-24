@@ -4,16 +4,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer.AuthorizedUrl;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
-import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
-import com.vaadin.flow.spring.security.RequestUtil;
+import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -26,25 +24,14 @@ class SecurityConfiguration {
     @Bean
     SecurityFilterChain securityFilterChain(
             HttpSecurity http,
-            GrantedAuthoritiesMapper keycloakRoleMapper,
-            ClientRegistrationRepository clientRegistrationRepository,
-            RequestUtil vaadinRequestUtil) throws Exception {
+            GrantedAuthoritiesMapper keycloakRoleMapper) throws Exception {
         http
-                // Vaadin er kartlagt på servlet-roten (vaadin.url-mapping="/*", standard),
-                // og rammeverkets interne init/uidl/heartbeat-forespørsler beskyttes av
-                // Vaadins egen sikkerhetsnøkkel, ikke Spring Securitys CSRF-token. Uten
-                // unntak blokkeres de og gir en evig "Connection lost"-reconnect-løkke
-                // på /admin og /app. Unntaket må bare gjelde ekte Vaadin-interne
-                // forespørsler (servlet-roten med v-r, VAADIN/push, VAADIN/dynamic):
-                // et unntak for enhver forespørsel med v-r lot f.eks.
-                // POST /logout?v-r=x omgå CSRF. Se docs/local-development.md.
-                .csrf(csrf -> csrf.ignoringRequestMatchers(vaadinRequestUtil::isFrameworkInternalRequest))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/app", "/app/**").hasRole("SELLER")
-                        .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/selgersoknad", "/selgersoknad/**").authenticated()
-                        .requestMatchers("/tilgang-nektet", "/innlogging-feilet").permitAll()
-                        .anyRequest().permitAll())
+                        // Ekstra vern ved direkte sidelasting av administrasjonen. Selve
+                        // tilgangskontrollen i Vaadin er @RolesAllowed på visningene,
+                        // håndhevet av VaadinSecurityConfigurer nedenfor.
+                        .requestMatchers("/app/admin", "/app/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/selgersoknad", "/selgersoknad/**").authenticated())
                 .oauth2Login(oauth2 -> oauth2
                         .failureHandler((request, response, exception) ->
                                 response.sendRedirect("/innlogging-feilet"))
@@ -52,25 +39,25 @@ class SecurityConfiguration {
                                 .userAuthoritiesMapper(keycloakRoleMapper)))
                 .exceptionHandling(exceptionHandling -> exceptionHandling
                         .accessDeniedPage("/tilgang-nektet"))
-                .logout(logout -> logout
-                        // Standard Spring Security-utlogging: bare POST /logout med
-                        // CSRF-token. GET-utlogging ville latt et annet nettsted logge
-                        // brukeren ut av både markedsplassen og Keycloak-SSO-økten.
-                        // Vaadin-flatene bruker LogoutForm, Thymeleaf-sidene et skjema.
-                        // Uten RP-initiated logout mot Keycloak overlever Keycloaks
-                        // egen SSO-økt selv om den lokale Spring-økten avsluttes: neste
-                        // innlogging (f.eks. som en annen demobruker) hopper stille over
-                        // Keycloaks innloggingsskjema og gjenbruker forrige identitet.
-                        // oidcLogoutSuccessHandler sender brukeren via Keycloaks
-                        // end_session_endpoint slik at også SSO-økten avsluttes.
-                        .logoutSuccessHandler(oidcLogoutSuccessHandler(clientRegistrationRepository)));
+                // Vaadin er kartlagt på /app/* og sikres med Vaadins egen integrasjon:
+                // - @RolesAllowed håndheves ved hver navigasjon (NavigationAccessControl).
+                //   URL-regler ser bare første sidelasting; navigasjon inne i Vaadin går
+                //   som interne forespørsler, så uten dette kunne hvem som helst navigere
+                //   klientside til administrasjonen.
+                // - Vaadins interne forespørsler slippes gjennom og unntas fra Spring
+                //   CSRF; de beskyttes av Vaadins egen sikkerhetsnøkkel.
+                // - Utlogging er standard Spring Security: bare POST /logout med
+                //   CSRF-token (LogoutForm i Vaadin, skjema i Thymeleaf). GET-utlogging
+                //   ville latt et annet nettsted logge brukeren ut.
+                // - Utlogging går via Keycloaks end_session_endpoint (RP-initiated
+                //   logout), slik at også Keycloaks SSO-økt avsluttes. Ellers hopper
+                //   neste innlogging stille over Keycloak-skjemaet og gjenbruker
+                //   forrige identitet.
+                // Offentlige Spring MVC-sider utenfor /app er åpne (anyRequest).
+                .with(VaadinSecurityConfigurer.vaadin(), vaadin -> vaadin
+                        .oauth2LoginPage("/oauth2/authorization/keycloak", "{baseUrl}/")
+                        .anyRequest(AuthorizedUrl::permitAll));
         return http.build();
-    }
-
-    private LogoutSuccessHandler oidcLogoutSuccessHandler(ClientRegistrationRepository clientRegistrationRepository) {
-        var handler = new OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository);
-        handler.setPostLogoutRedirectUri("{baseUrl}/");
-        return handler;
     }
 
     @Bean

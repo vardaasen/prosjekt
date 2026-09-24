@@ -22,7 +22,7 @@ Vi skiller to administrative ansvar:
    nøkler og gjenoppretting. Kontoen opprettes ved sikker bootstrap gjennom
    deploy-konfigurasjon og brukes bare til IAM-drift.
 2. **Markedsplassadministrator** er en vanlig OIDC-identitet med
-   `ADMIN`-realmrolle. Den bruker markedsplassens egen `/admin`-flate for å
+   `ADMIN`-realmrolle. Den bruker markedsplassens egen `/app/admin`-flate for å
    vurdere selgersøknader og tildele eller trekke tilbake
    markedsplassprivilegier.
 

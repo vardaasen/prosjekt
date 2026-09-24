@@ -20,11 +20,16 @@ Dette er en prototype-baseline, ikke en full sikkerhetssertifisering. Punktene s
   et `DRAFT` med både slug og den innloggede selgerkontoens OIDC-subject.
   Optimistisk låsing avviser konkurrerende endringer i stedet for å
   overskrive dem.
+- **Vaadin-tilgang:** Vaadin er kartlagt på `/app/*`. `VaadinSecurityConfigurer`
+  håndhever `@RolesAllowed` ved hver navigasjon, ikke bare ved første
+  sidelasting; `/app/admin` krever i tillegg `ADMIN` på URL-nivå. Vaadins
+  interne forespørsler unntas fra Spring CSRF og beskyttes av Vaadins egen
+  sikkerhetsnøkkel; alle andre skrivende forespørsler krever CSRF-token.
 - **Administrasjon:** `ADMIN` er en markedsplassrolle, avgrenset fra
   Keycloaks plattformadministrator. Beslutning 0006 fastsetter at nye
   identiteter ikke kan få `SELLER` eller `ADMIN` ved selvregistrering.
 - **Selgersøknader:** En innlogget OIDC-identitet kan opprette en vedvarende
-  `PENDING`-søknad. Bare `/admin` med `ADMIN` kan godkjenne eller avslå den.
+  `PENDING`-søknad. Bare `/app/admin` med `ADMIN` kan godkjenne eller avslå den.
   Avslag krever begrunnelse; innsendelse og beslutninger har append-only
   auditspor med actor subject og tidspunkt.
 - **Rolletildeling:** Godkjenning forsøker først å tildele `SELLER` via en

@@ -7,7 +7,7 @@ flowchart TD
     F --> G[Tildel kun realmrollen ADMIN]
     G --> H[Dokumenter tilgang i miljøets tilgangsregister]
     H --> I[Deploy markedsplass med Flyway-migreringer]
-    I --> J[Verifiser offentlig katalog, OIDC-login og /admin]
-    J --> K{ADMIN har tilgang og SELLER mangler /admin?}
+    I --> J[Verifiser offentlig katalog, OIDC-login og /app/admin]
+    J --> K{ADMIN har tilgang og SELLER mangler /app/admin?}
     K -- Nei --> L[Stopp utrulling og korriger autorisasjon]
     K -- Ja --> M[Miljø klart for selgersøknader]
