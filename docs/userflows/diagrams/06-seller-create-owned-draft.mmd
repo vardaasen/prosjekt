@@ -1,0 +1,13 @@
+flowchart TD
+    A[Åpner /app] --> B{Har Keycloak-rollen SELLER?}
+    B -- Nei --> C[Ingen tilgang til selgerområdet]
+    B -- Ja --> D[OIDC-innlogging med Authorization Code og PKCE]
+    D --> E[Registrer eller hent SellerAccount fra OIDC subject]
+    E --> F[Vis egne utkast]
+    F --> G[Fyll ut slug, tittel, lokasjon, tilstand, kategori, pris og beskrivelse]
+    G --> H{Gyldig og unik slug?}
+    H -- Nei --> I[Vis valideringsfeil]
+    I --> G
+    H -- Ja --> J[Lagre som DRAFT med SellerAccount som eier]
+    J --> K[Vis utkast bare for samme SellerAccount]
+    K --> L[Senere: rediger, publiser eller arkiver med eierskapskontroll]

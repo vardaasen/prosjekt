@@ -11,6 +11,22 @@ Logg inn
 
 Diagrammene under er også lagret som separate Mermaid-kilder i `docs/userflows/diagrams/` og eksporteres til PDF i `docs/userflows/pdf/`.
 
+## Implementasjonsstatus
+
+Ingen av de fem opprinnelige diagrammene er fullført ende-til-ende. De
+beskriver et bredere målbilde enn den implementerte prototypen.
+
+| Diagram | Status | Implementert | Ikke implementert |
+| --- | --- | --- | --- |
+| 1. Offentlig sitemap og SEO-innganger | Delvis | `/`, `/utstyr`, `/utstyr/{slug}`, sitemap og robots | Kategorisider, `/selg`, `/om`, offentlig innlogging og forespørsel |
+| 2. Kjøper finner utstyr fra forsiden | Delvis | Forside, publiserte annonser, katalog, søk og detaljside | Kategorinavigasjon, kjøperkonto, lagring og forespørsel |
+| 3. Browse/filter til listedetalj | Delvis | Katalog, fritekst, lokasjon, tilstand, nulltreff og detaljside | Prisfilter og kategori-URL-er |
+| 4. Listedetalj til forespørsel eller lagring | Delvis | Publisert detaljside med selger- og dokumentasjonsdata | Forespørsel, lagring, kjøperinnlogging og retur-URL |
+| 5. Selger starter fra offentlig side | Delvis | Keycloak-innlogging, `SELLER`-krav på `/app` og privat opprettelse av utkast | `/selg`, bilder, dokumenter, redigering, publisering og arkivering |
+
+Diagram 6 dekker den implementerte selgerflyten som ikke fantes da de
+opprinnelige diagrammene ble laget.
+
 ## 1. Offentlig sitemap og SEO-innganger
 
 ```mermaid
@@ -120,4 +136,22 @@ flowchart TD
     K --> L{Fullfør nå?}
     L -- Ja --> M[Send til verifisering/publisering]
     L -- Nei --> N[Lagre som utkast]
+```
+
+## 6. Innlogget selger oppretter privat utkast
+
+```mermaid
+flowchart TD
+    A[Åpner /app] --> B{Har Keycloak-rollen SELLER?}
+    B -- Nei --> C[Ingen tilgang til selgerområdet]
+    B -- Ja --> D[OIDC-innlogging med Authorization Code og PKCE]
+    D --> E[Registrer eller hent SellerAccount fra OIDC subject]
+    E --> F[Vis egne utkast]
+    F --> G[Fyll ut slug, tittel, lokasjon, tilstand, kategori, pris og beskrivelse]
+    G --> H{Gyldig og unik slug?}
+    H -- Nei --> I[Vis valideringsfeil]
+    I --> G
+    H -- Ja --> J[Lagre som DRAFT med SellerAccount som eier]
+    J --> K[Vis utkast bare for samme SellerAccount]
+    K --> L[Senere: rediger, publiser eller arkiver med eierskapskontroll]
 ```
