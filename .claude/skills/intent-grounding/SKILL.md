@@ -90,6 +90,13 @@ list and the ADRs ever disagree.
 - **Roles and approval.** `ADMIN` is a marketplace role, not a Keycloak admin.
   Self-registration never grants `SELLER`. Approval grants `SELLER` via a
   least-privilege Keycloak service account and writes an audit entry. (0006)
+- **Security and privacy by design and by default** (0009, GDPR art. 25):
+  collect and store only what a function needs, give every kind of personal
+  data a retention period, keep new functionality closed until explicitly
+  opened, prefer the framework's own security mechanisms, choose the simplest
+  solution that meets the requirements, and require a decision note for
+  every external service (which personal data, where it is processed,
+  licence).
 - **Secrets never in Git.** Local secrets live in the git-ignored `.env`.
 - **CSRF protection stays on** for every state-changing request outside
   genuine Vaadin-internal requests.
