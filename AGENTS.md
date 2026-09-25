@@ -59,7 +59,10 @@ dekker Java, Vaadin, SEO og database. Provenans for det kuraterte settet ligger
 i `skills-lock.json`.
 
 `grilling` er lagt til lokalt fordi `grill-with-docs` og `triage` bygger på
-den.
+den. `domain-model-diagram` bygger domenemodellen før koding (lingvistisk
+analyse, klassediagram med multiplisitet, tilstandsdiagrammer og
+personopplysninger per entitet) i `docs/domain/domenemodell.md`;
+`CONTEXT.md` forblir en ren ordliste.
 
 For domene-/persistensfasen brukes særlig `domain-modeling`,
 `codebase-design`, `tdd`, `effective-java`, `database`, `spring-data-jpa` og

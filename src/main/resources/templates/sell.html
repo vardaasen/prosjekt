@@ -10,13 +10,7 @@
   <link rel="stylesheet" href="/styles/site.css">
 </head>
 <body>
-<header class="shell topbar">
-  <a class="brand" href="/">Havbruksbrukt</a>
-  <nav aria-label="Hovedmeny">
-    <a href="/utstyr">Utforsk utstyr</a>
-    <a href="/selg" aria-current="page">Selg utstyr</a>
-  </nav>
-</header>
+<header th:replace="~{fragments/header :: header}"></header>
 <main class="shell">
   <section class="hero">
     <p class="eyebrow">For virksomheter</p>

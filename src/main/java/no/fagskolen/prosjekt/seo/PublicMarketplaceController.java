@@ -17,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.beans.factory.annotation.Value;
 import jakarta.servlet.http.HttpServletResponse;
 import no.fagskolen.prosjekt.marketplace.domain.ListingCondition;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
@@ -133,6 +134,26 @@ public class PublicMarketplaceController {
         return "redirect:/selgersoknad";
     }
 
+    // Krever innlogging (SecurityConfiguration), så en anonym bruker sendes via
+    // Keycloak og tilbake hit. Markedsplassadministratoren går rett til
+    // administrasjonen (userflow 10); andre tilbake til siden der «Logg inn» ble
+    // trykket. Bare lokale stier godtas, ellers ville dette vært en åpen
+    // videresending.
+    @GetMapping("/logg-inn")
+    public String logIn(@RequestParam(defaultValue = "/") String returnTo, Authentication authentication) {
+        var administrator = authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+        return "redirect:" + (administrator ? "/app/admin" : localPathOrHome(returnTo));
+    }
+
+    private static String localPathOrHome(String returnTo) {
+        var local = returnTo.startsWith("/")
+                && !returnTo.startsWith("//")
+                && !returnTo.contains("\\")
+                && returnTo.chars().noneMatch(Character::isISOControl);
+        return local ? returnTo : "/";
+    }
+
     @GetMapping("/tilgang-nektet")
     public String accessDenied(Model model, HttpServletResponse response) {
         response.setStatus(HttpStatus.FORBIDDEN.value());
@@ -158,6 +179,7 @@ public class PublicMarketplaceController {
                 User-agent: *
                 Allow: /
                 Disallow: /app
+                Disallow: /logg-inn
                 Sitemap: %s
                 """.formatted(absoluteUrl("/sitemap.xml")));
     }
