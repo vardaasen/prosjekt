@@ -135,15 +135,18 @@ public class PublicMarketplaceController {
     }
 
     // Krever innlogging (SecurityConfiguration), så en anonym bruker sendes via
-    // Keycloak og tilbake hit. Markedsplassadministratoren går rett til
-    // administrasjonen (userflow 10); andre tilbake til siden der «Logg inn» ble
-    // trykket. Bare lokale stier godtas, ellers ville dette vært en åpen
-    // videresending.
+    // Keycloak og tilbake hit (userflow 10): markedsplassadministratoren går rett
+    // til administrasjonen, en person midt i en oppgave tilbake til oppgaven
+    // (returnTo), ellers til Min side. Bare lokale stier godtas, ellers ville
+    // dette vært en åpen videresending.
     @GetMapping("/logg-inn")
-    public String logIn(@RequestParam(defaultValue = "/") String returnTo, Authentication authentication) {
+    public String logIn(@RequestParam(required = false) String returnTo, Authentication authentication) {
         var administrator = authentication.getAuthorities().stream()
                 .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
-        return "redirect:" + (administrator ? "/app/admin" : localPathOrHome(returnTo));
+        if (administrator) {
+            return "redirect:/app/admin";
+        }
+        return "redirect:" + (returnTo == null ? "/app" : localPathOrHome(returnTo));
     }
 
     private static String localPathOrHome(String returnTo) {

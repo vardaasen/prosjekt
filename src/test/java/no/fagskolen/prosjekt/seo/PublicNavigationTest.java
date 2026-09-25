@@ -11,12 +11,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PublicNavigationTest {
 
     @Test
-    void offersLoginToAnonymousVisitorsAndRemembersThePage() {
+    void offersLoginToAnonymousVisitors() {
         var navigation = PublicNavigation.forVisitor(anonymous(), "/utstyr/sentrifugalpumpe-450");
 
         assertThat(labels(navigation)).containsExactly("Utforsk utstyr", "Selg utstyr");
         assertThat(navigation.loggedIn()).isFalse();
-        assertThat(navigation.returnTo()).isEqualTo("/utstyr/sentrifugalpumpe-450");
     }
 
     @Test
@@ -29,7 +28,7 @@ class PublicNavigationTest {
         for (var roles : new String[][] {{}, {"BUYER"}, {"SELLER"}}) {
             var navigation = PublicNavigation.forVisitor(withRoles(roles), "/");
 
-            assertThat(labels(navigation)).containsExactly("Utforsk utstyr", "Selg utstyr");
+            assertThat(labels(navigation)).containsExactly("Utforsk utstyr", "Selg utstyr", "Min side");
             assertThat(navigation.loggedIn()).isTrue();
         }
     }
@@ -42,6 +41,7 @@ class PublicNavigationTest {
                 .containsExactly(
                         org.assertj.core.groups.Tuple.tuple("Utforsk utstyr", "/utstyr"),
                         org.assertj.core.groups.Tuple.tuple("Selg utstyr", "/selg"),
+                        org.assertj.core.groups.Tuple.tuple("Min side", "/app"),
                         org.assertj.core.groups.Tuple.tuple("Administrasjon", "/app/admin"));
     }
 
@@ -55,13 +55,12 @@ class PublicNavigationTest {
     }
 
     @Test
-    void marksTheCurrentSectionAndKeepsFiltersWhenReturning() {
+    void marksTheCurrentSectionWhenFiltersAreApplied() {
         var navigation = PublicNavigation.forVisitor(anonymous(), "/utstyr?q=pumpe");
 
         assertThat(navigation.links()).filteredOn(PublicNavigation.Link::current)
                 .extracting(PublicNavigation.Link::label)
                 .containsExactly("Utforsk utstyr");
-        assertThat(navigation.returnTo()).isEqualTo("/utstyr?q=pumpe");
     }
 
     private static java.util.List<String> labels(PublicNavigation navigation) {

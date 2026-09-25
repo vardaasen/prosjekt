@@ -50,13 +50,18 @@ Sist oppdatert: 2026-09-24
   `VaadinSecurityConfigurer` håndhever `@RolesAllowed` ved hver navigasjon
   (tidligere kunne en anonym bruker navigere klientside til administrasjonen),
   og workarounds fra rot-kartleggingen er fjernet.
+- Min side (#16): alle innloggede personer registrerer virksomheter med
+  organisasjonsnummer (kontrollsiffer), som gir en tilknytning som venter på
+  verifisering (0007, userflow 11). Personen lagres bare som
+  Keycloak-subject. Vanlig «Logg inn» lander på Min side, og menyen viser
+  «Min side».
 
 ## Nåværende arkitektur
 
 | Flate | Teknologi | Status |
 | --- | --- | --- |
 | Offentlig lesing og SEO | Spring MVC + Thymeleaf | Prototype fungerer |
-| Innlogget appflate | Vaadin Flow + Keycloak OIDC under `/app/*` | `/app` krever `SELLER`, `/app/admin` krever `ADMIN`; `@RolesAllowed` håndheves av Vaadin |
+| Innlogget appflate | Vaadin Flow + Keycloak OIDC under `/app/*` | Min side (`/app`) for alle innloggede, `/app/selgeromrade` krever `SELLER`, `/app/admin` krever `ADMIN`; `@RolesAllowed` håndheves av Vaadin |
 | Data | PostgreSQL + Flyway + JPA Data Mapper | Aktiv katalogadapter; in-memory-adapter beholdes for enhetstester |
 | Identitet og tilgang | Keycloak OIDC + Spring Security | Lokal demo-realm; produksjonskonfigurasjon gjenstår |
 | Administrator og godkjenning | Beslutning 0006 + userflow 7 | Ikke implementert; må være på plass før selvregistrering |

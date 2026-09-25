@@ -3,6 +3,7 @@ package no.fagskolen.prosjekt.security;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import no.fagskolen.prosjekt.admin.AdminWorkspaceView;
+import no.fagskolen.prosjekt.marketplace.ui.MinSideView;
 import no.fagskolen.prosjekt.marketplace.ui.SellerWorkspaceView;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,14 @@ class VaadinNavigationAccessControlTest {
         assertThat(hasAccess(SellerWorkspaceView.class, null)).isFalse();
         assertThat(hasAccess(SellerWorkspaceView.class, "BUYER")).isFalse();
         assertThat(hasAccess(SellerWorkspaceView.class, "SELLER")).isTrue();
+    }
+
+    @Test
+    void everyLoggedInPersonMayOpenMinSide() {
+        assertThat(hasAccess(MinSideView.class, null)).isFalse();
+        assertThat(hasAccess(MinSideView.class, "")).isTrue();
+        assertThat(hasAccess(MinSideView.class, "SELLER")).isTrue();
+        assertThat(hasAccess(MinSideView.class, "ADMIN")).isTrue();
     }
 
     private boolean hasAccess(Class<?> view, String role) {

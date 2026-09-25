@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
  * administratorrolle (userflow 10). Søkemotorer er alltid anonyme og ser
  * utlogget meny.
  */
-public record PublicNavigation(List<Link> links, boolean loggedIn, String returnTo) {
+public record PublicNavigation(List<Link> links, boolean loggedIn) {
 
     public record Link(String label, String href, boolean current) {
     }
@@ -26,16 +26,17 @@ public record PublicNavigation(List<Link> links, boolean loggedIn, String return
         var administrator = loggedIn && roles(authentication).contains("ROLE_ADMIN");
 
         // Kjøper og selger er ikke kontotyper (beslutningsnotat 0007), så menyen
-        // skiller bare på innlogget og markedsplassadministrator. «Min side» (/app)
-        // legges til når appen er åpnet for alle innloggede personer; menyen skal
-        // aldri lenke til en side personen får 403 på.
+        // skiller bare på innlogget og markedsplassadministrator (userflow 10).
         var links = new ArrayList<Link>();
         links.add(link("Utforsk utstyr", "/utstyr", currentPath));
         links.add(link("Selg utstyr", "/selg", currentPath));
+        if (loggedIn) {
+            links.add(link("Min side", "/app", currentPath));
+        }
         if (administrator) {
             links.add(link("Administrasjon", "/app/admin", currentPath));
         }
-        return new PublicNavigation(List.copyOf(links), loggedIn, currentPath);
+        return new PublicNavigation(List.copyOf(links), loggedIn);
     }
 
     private static Set<String> roles(Authentication authentication) {

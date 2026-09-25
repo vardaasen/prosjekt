@@ -7,7 +7,7 @@ Dette er en prototype-baseline, ikke en full sikkerhetssertifisering. Punktene s
 - **Identitet:** Lokal utvikling bruker Keycloak som en separat OIDC-leverandør.
   Markedsplass-appen lagrer ikke passord og bruker Authorization Code med PKCE
   for innlogging under `/app`.
-- **Tilgang:** `/app` krever Keycloak-rollen `SELLER`; alle offentlige SEO-ruter
+- **Tilgang:** Min side (`/app`) krever innlogging; selgerområdet (`/app/selgeromrade`) krever Keycloak-rollen `SELLER` inntil migreringen etter 0007 (#19, #26); alle offentlige SEO-ruter
   forblir anonyme. Keycloak realm-roller mappes eksplisitt til Spring
   authorities med `ROLE_`-prefiks.
 - **Selgereierskap:** En `SellerAccount` kobler Keycloaks stabile `sub` til en

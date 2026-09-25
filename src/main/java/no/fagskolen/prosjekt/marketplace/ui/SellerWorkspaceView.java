@@ -26,8 +26,9 @@ import com.vaadin.flow.component.textfield.BigDecimalField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 
-// Vaadin er kartlagt på /app/*, så tom rute er /app.
-@Route("")
+// Selgerområdet (gammel modell, 0006) inntil utkast eies av virksomheten (#19).
+// Min side ligger på /app.
+@Route("selgeromrade")
 @RolesAllowed("SELLER")
 @PageTitle("Selgerområde | Havbruksbrukt")
 public class SellerWorkspaceView extends VerticalLayout {

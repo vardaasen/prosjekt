@@ -229,10 +229,10 @@ class PublicMarketplaceControllerTest {
     }
 
     @Test
-    void offersLoginThatReturnsToTheCurrentPageForAnonymousVisitors() throws Exception {
+    void offersLoginThatLandsOnMinSideForAnonymousVisitors() throws Exception {
         mockMvc.perform(get("/utstyr"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("href=\"/logg-inn?returnTo=/utstyr\" rel=\"nofollow\">Logg inn</a>")))
+                .andExpect(content().string(containsString("href=\"/logg-inn\" rel=\"nofollow\">Logg inn</a>")))
                 .andExpect(content().string(not(containsString("Logg ut"))));
     }
 
@@ -240,6 +240,7 @@ class PublicMarketplaceControllerTest {
     void showsLogoutInsteadOfLoginToLoggedInPersons() throws Exception {
         mockMvc.perform(get("/utstyr").with(oidcLogin().idToken(token -> token.subject("buyer-subject"))))
                 .andExpect(content().string(containsString("href=\"/selg\">Selg utstyr</a>")))
+                .andExpect(content().string(containsString("href=\"/app\">Min side</a>")))
                 .andExpect(content().string(containsString("<form method=\"post\" action=\"/logout\">")))
                 .andExpect(content().string(not(containsString("Logg inn</a>"))))
                 .andExpect(content().string(not(containsString("Min søknad"))));
@@ -256,6 +257,13 @@ class PublicMarketplaceControllerTest {
         mockMvc.perform(get("/logg-inn").param("returnTo", "/utstyr"))
                 .andExpect(status().isFound())
                 .andExpect(redirectedUrl("/oauth2/authorization/keycloak"));
+    }
+
+    @Test
+    void landsOnMinSideAfterAPlainLogin() throws Exception {
+        mockMvc.perform(get("/logg-inn").with(oidcLogin().idToken(token -> token.subject("buyer-subject"))))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("/app"));
     }
 
     @Test

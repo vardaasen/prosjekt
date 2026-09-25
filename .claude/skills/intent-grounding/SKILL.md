@@ -87,9 +87,13 @@ list and the ADRs ever disagree.
   Flyway is the only schema owner. (0004)
 - **Open Vaadin Core components only.** Commercial components require a new
   decision note. (0001)
-- **Roles and approval.** `ADMIN` is a marketplace role, not a Keycloak admin.
-  Self-registration never grants `SELLER`. Approval grants `SELLER` via a
-  least-privilege Keycloak service account and writes an audit entry. (0006)
+- **Parties and verification.** A Virksomhet is the party in listings, bids
+  and trades; a Person acts for it through a Tilknytning that the
+  marketplace administrator verifies. Buyer and seller are roles in a
+  listing or trade, not account types; `SELLER`/`BUYER` realm roles are being
+  phased out. `ADMIN` is a marketplace role, not a Keycloak admin. Nothing
+  becomes public before verification; every listing and every trade is
+  verified by the administrator. (0007, replacing the seller part of 0006)
 - **Security and privacy by design and by default** (0009, GDPR art. 25):
   collect and store only what a function needs, give every kind of personal
   data a retention period, keep new functionality closed until explicitly
