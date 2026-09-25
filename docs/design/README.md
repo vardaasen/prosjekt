@@ -36,8 +36,9 @@ hvert valg skal kunne spores tilbake.
 | 10 | Navigasjon, innlogging og utlogging | Besluttet, trinn 1 implementert |
 | 11 | Tilknytning til virksomhet | Utkast (0007) |
 | 12 | Annonse fra utkast til publisert | Utkast (0007) |
-| 13 | Bud | Utkast (0007), åpne spørsmål |
+| 13 | Bud | Utkast (0007) |
 | 14 | Handel og handelsverifisering | Utkast (0007) |
+| 15 | Lagret annonse | Utkast |
 
 Oversikt og diagrammer: `docs/userflows/seo-public-app-diagrams.md`
 (filnavnet er historisk; filen samler alle flyter). Detaljer for flyt 10:

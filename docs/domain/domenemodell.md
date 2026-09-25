@@ -5,7 +5,7 @@ Status: **Utkast til grilling** (D1, #12). Laget med skillen
 viser hvordan de henger sammen. Ingen implementasjonsdetaljer.
 
 Modellen er en raffinering av userflowene (se `docs/design/README.md`).
-Primærkilder: userflow 10–14 i `docs/userflows/`. Øvrige kilder:
+Primærkilder: userflow 10–15 i `docs/userflows/`. Øvrige kilder:
 `CONTEXT.md`, beslutningsnotat 0007 (verifisert tilknytning og handel),
 0008 (WCAG), 0009 (innebygd personvern) og designhåndboken i
 `DesignMarketPlace/`.
@@ -33,7 +33,7 @@ Primærkilder: userflow 10–14 i `docs/userflows/`. Øvrige kilder:
 | Pris | verdiobjekt | designhåndboken: «tittel, pris og lokasjon» |
 | Tittel, beskrivelse, spesifikasjoner | attributter på annonse | designhåndboken: annonsedetalj |
 | Publiseringsdato, referanse-ID | attributter på annonse | designhåndboken: annonsedetalj |
-| Bilde | entitet (del av annonse) | designhåndboken: «Selger laster opp bilder»; ikke i CONTEXT (S8) |
+| Bilde | entitet (del av annonse) | designhåndboken: «Selger laster opp bilder»; eget begrep (S8) |
 | Dokumentasjon | entitet (del av annonse) | CONTEXT; designhåndboken: «dokumenter og sertifikater» |
 | Annonsegodkjenning | hendelse/beslutning | CONTEXT, 0007 |
 | Forespørsel | entitet | CONTEXT |
@@ -44,7 +44,7 @@ Primærkilder: userflow 10–14 i `docs/userflows/`. Øvrige kilder:
 | Dokumentasjonsvurdering | entitet (del av verifiseringsgrunnlag) | grilling S1: metadata om hvert papir |
 | Auditspor | entitet (logg over beslutninger) | 0006: «auditlogg med administrator-subject …» |
 | Varsel | utenfor inntil videre (e-post, T0) | userflow 10: «personen får e-post når …» |
-| Lagret annonse | kandidat (S9) | designhåndboken: «sender forespørsel eller lagrer annonsen» |
+| Lagret annonse | entitet (personens) | userflow 15: «Annonsen er lagret for personen» |
 | Keycloak-identitet | utenfor (ekstern) | 0007 |
 | Betaling | utenfor | 0007: «Markedsplassen håndterer ikke betalingen» |
 
@@ -132,6 +132,10 @@ classDiagram
         gitt
         aksepter()
     }
+    class LagretAnnonse {
+        lagret
+        følgerEndringer
+    }
     class Handel {
         status
         opprettet
@@ -155,6 +159,8 @@ classDiagram
     Bud "1" -- "0..1" Handel : akseptert som
     Annonse "1" -- "*" Forespørsel : gjelder
     Tilknytning "1" -- "*" Forespørsel : sendt gjennom
+    Person "1" -- "*" LagretAnnonse : lagrer
+    LagretAnnonse "*" -- "1" Annonse : gjelder
 ```
 
 Scenarioer bak multiplisitetene:
@@ -175,6 +181,9 @@ Scenarioer bak multiplisitetene:
   (type, utsteder, dato, gyldighet, vurdering), brukt ved annonsegodkjenning
   og handelsverifisering. Synlig for administratoren og virksomheten, aldri
   publisert. Papiret selv er dokumentasjon.
+- **Lagret annonse tilhører personen (S9):** den er et personlig
+  hjelpemiddel for å huske, sammenligne og følge endringer, ikke en felles
+  liste for virksomheten (userflow 15).
 - **Bud 1 – 0..1 Handel:** et bud blir til høyst én handel, og bare hvis det
   aksepteres.
 
@@ -221,14 +230,17 @@ stateDiagram-v2
     Gitt --> Akseptert : selger aksepterer (13, I–J)
     Gitt --> Avslått : selger avslår (13, I–K)
     Gitt --> Trukket : kjøper trekker budet (13, I–L)
+    Gitt --> PåVent : et annet bud på annonsen aksepteres (13, J–M)
+    PåVent --> Gitt : handelen avvises (13, N–P)
+    PåVent --> Bortfalt : handelen gjennomføres (13, N–O)
     Akseptert --> Avslått : handelen avvises (14, I–J)
     Akseptert --> [*]
     Avslått --> [*]
     Trukket --> [*]
+    Bortfalt --> [*]
 ```
 
-Åpent (S6): om et bud kan utløpe, og om andre bud faller bort når ett
-aksepteres.
+Et bud har ingen tidsfrist (S6).
 
 ### Handel (userflow 14)
 
@@ -251,6 +263,7 @@ stateDiagram-v2
 | Verifiseringsgrunnlag | vurderinger kan nevne personer i dokumentene; hvilken administrator som vurderte | annonsegodkjenning og handelsverifisering | avtale / berettiget interesse (åpent) | åpent | sammen med annonsen (åpent) |
 | Annonse | kan inneholde navn i tekst, bilder og dokumenter (EXIF, signaturer) | publisering | avtale | til arkivert + frist (åpent) | se R2 (#14) |
 | Bud, forespørsel | person som ga budet, beløp, melding | handel og dialog | avtale | åpent | åpent |
+| Lagret annonse | hvilke annonser personen følger (interesseprofil) | huske, sammenligne, varsle om endringer | avtale | til personen fjerner den; frist etter arkivering åpent | personen fjerner den eller sletter kontoen |
 | Handel | parter, pris, hvem som verifiserte | handelsverifisering | avtale, mulig lovpålagt oppbevaring | lovkrav avklares (#28) | etter lovpålagt frist |
 | Auditspor | administrator-subject, beslutning, tidspunkt | etterprøvbarhet | berettiget interesse (åpent) | åpent | åpent |
 
@@ -261,11 +274,10 @@ stateDiagram-v2
 - ~~S3~~: Egen status Avvist, forskjellig fra trukket tilbake.
 - ~~S4~~: Tilbake til utkast med tilbakemelding; ingen avslått-status.
 - ~~S5~~: Gjennomført handel arkiverer annonsen.
-- **S6:** Kan et bud utløpe, og faller andre bud bort når ett aksepteres?
-  (Avslå og trekke er besluttet, se userflow 13.)
+- ~~S6~~: Ingen tidsfrist; andre bud settes på vent under handel.
 - ~~S7~~: Avvist handel avslår budet og publiserer annonsen igjen.
-- **S8:** Skal «bilde» inn i `CONTEXT.md` som eget begrep ved siden av
-  dokumentasjon?
-- **S9:** Hører «lagret annonse» (designhåndboken) med i modellen nå?
+- ~~S8~~: Bilde er eget begrep.
+- ~~S9~~: Lagret annonse tilhører personen (userflow 15). Åpent: hvor lenge
+  den beholdes etter at annonsen er arkivert.
 - **S10:** Behandlingsgrunnlag og lagringstid per entitet (henger sammen
   med #28).

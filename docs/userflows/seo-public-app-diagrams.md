@@ -29,8 +29,9 @@ beskriver et bredere målbilde enn den implementerte prototypen.
 | 10. Navigasjon, innlogging og utlogging | Besluttet | Logg ut via Keycloak til forsiden | Meny etter innlogging og administratorrolle, Min side, egen appmeny, retur etter innlogging, varsler. Se `navigasjon-og-innlogging.md` |
 | 11. Tilknytning til virksomhet | Utkast (0007) | – | Alt |
 | 12. Annonse fra utkast til publisert | Utkast (0007) | – | Alt |
-| 13. Bud | Utkast (0007), åpne spørsmål | – | Alt |
+| 13. Bud | Utkast (0007) | – | Alt |
 | 14. Handel og handelsverifisering | Utkast (0007) | – | Alt |
+| 15. Lagret annonse | Utkast | – | Alt |
 
 Diagram 6 dekker den implementerte selgerflyten som ikke fantes da de
 opprinnelige diagrammene ble laget.
@@ -309,7 +310,7 @@ flowchart TD
 
 ## 13. Bud
 
-Et bud kan gis før tilknytningen er verifisert (0007). Stiplete linjer er åpne spørsmål (S6).
+Et bud kan gis før tilknytningen er verifisert (0007). Et bud har ingen tidsfrist; det står til selgeren aksepterer eller avslår, eller kjøperen trekker det (S6).
 
 ```mermaid
 flowchart TD
@@ -326,8 +327,10 @@ flowchart TD
     I -- Selger aksepterer --> J[Handel, userflow 14]
     I -- Selger avslår --> K[Avslått: kjøper varsles]
     I -- Kjøper trekker budet --> L[Trukket: selger varsles]
-    I -. Åpent S6: tidsfrist? .-> M[Utløpt]
-    J -. Åpent S6: faller andre bud bort? .-> N[Andre bud på annonsen]
+    J --> M[Andre bud på annonsen settes på vent]
+    M --> N{Utfall av handelen}
+    N -- Gjennomført --> O[Budene på vent faller bort: kjøperne varsles]
+    N -- Avvist --> P[Budene på vent blir aktive igjen]
 ```
 
 ## 14. Handel og handelsverifisering
@@ -346,4 +349,27 @@ flowchart TD
     E -- Nei --> I[Avvist: begge parter varsles med begrunnelse]
     I --> J[Budet avslås, annonsen publiseres igjen]
     J --> K[Selger kan akseptere et annet bud]
+```
+
+## 15. Lagret annonse
+
+En person lagrer en annonse for å finne den igjen, sammenligne og følge endringer (grilling S9). Lagrede annonser er personlige og krever innlogging. Detaljerer lagringsdelen av userflow 4.
+
+```mermaid
+flowchart TD
+    A[Person ser en annonse i katalogen eller annonsedetaljen] --> B[Lagre annonse]
+    B --> C{Innlogget?}
+    C -- Nei --> D[Logg inn, tilbake til annonsen]
+    D --> E
+    C -- Ja --> E[Annonsen er lagret for personen]
+    E --> F[Min side: lagrede annonser]
+    F --> G[Finn igjen senere]
+    F --> H[Sammenlign valgte annonser: pris, tilstand, lokasjon, dokumentasjon]
+    E --> I[Følg endringer]
+    I --> J{Endring på annonsen}
+    J -- Ny pris eller ny dokumentasjon --> K[Personen varsles]
+    J -- Under handel --> K
+    J -- Arkivert eller solgt --> L[Personen varsles, annonsen merkes som avsluttet i listen]
+    F --> M[Fjern lagret annonse]
+    L -. Åpent: hvor lenge beholdes den etter arkivering? .-> M
 ```

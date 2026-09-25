@@ -12,5 +12,7 @@ flowchart TD
     I -- Selger aksepterer --> J[Handel, userflow 14]
     I -- Selger avslår --> K[Avslått: kjøper varsles]
     I -- Kjøper trekker budet --> L[Trukket: selger varsles]
-    I -. Åpent S6: tidsfrist? .-> M[Utløpt]
-    J -. Åpent S6: faller andre bud bort? .-> N[Andre bud på annonsen]
+    J --> M[Andre bud på annonsen settes på vent]
+    M --> N{Utfall av handelen}
+    N -- Gjennomført --> O[Budene på vent faller bort: kjøperne varsles]
+    N -- Avvist --> P[Budene på vent blir aktive igjen]

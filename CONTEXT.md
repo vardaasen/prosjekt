@@ -87,6 +87,11 @@ arkivert. Bare en publisert annonse, eller en under handel, er offentlig
 synlig, og bare en publisert annonse tar imot bud.
 _Avoid_: Synlighetsstatus, annonsetilstand
 
+**Bilde**:
+Et fotografi av utstyret i en annonse, som viser utstyret og dets tilstand.
+Bilder publiseres sammen med annonsen.
+_Avoid_: Foto, vedlegg, media
+
 **Dokumentasjon**:
 Materiale knyttet til en annonse som underbygger utstyrets tilstand, historikk
 eller regelverksetterlevelse.
@@ -102,6 +107,11 @@ _Avoid_: Utstyrshistorikk, servicelogg
 Én vurdering i et verifiseringsgrunnlag: hva slags dokumentasjon det er, hvem
 som har utstedt den, når, hvor lenge den gjelder og hva den viser.
 _Avoid_: Sjekkliste, merknad
+
+**Lagret annonse**:
+En annonse en person har valgt å huske, sammenligne med andre og følge
+endringer på. Den tilhører personen, ikke virksomheten.
+_Avoid_: Favoritt, bokmerke, ønskeliste
 
 ## Handel og dialog
 

@@ -1,0 +1,16 @@
+flowchart TD
+    A[Person ser en annonse i katalogen eller annonsedetaljen] --> B[Lagre annonse]
+    B --> C{Innlogget?}
+    C -- Nei --> D[Logg inn, tilbake til annonsen]
+    D --> E
+    C -- Ja --> E[Annonsen er lagret for personen]
+    E --> F[Min side: lagrede annonser]
+    F --> G[Finn igjen senere]
+    F --> H[Sammenlign valgte annonser: pris, tilstand, lokasjon, dokumentasjon]
+    E --> I[Følg endringer]
+    I --> J{Endring på annonsen}
+    J -- Ny pris eller ny dokumentasjon --> K[Personen varsles]
+    J -- Under handel --> K
+    J -- Arkivert eller solgt --> L[Personen varsles, annonsen merkes som avsluttet i listen]
+    F --> M[Fjern lagret annonse]
+    L -. Åpent: hvor lenge beholdes den etter arkivering? .-> M
