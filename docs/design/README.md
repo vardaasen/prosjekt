@@ -9,6 +9,7 @@ hvert valg skal kunne spores tilbake.
 | 2. Domenemodell | `docs/domain/domenemodell.md` | Klassediagram, tilstandsdiagrammer og personopplysninger per entitet. Hver klasse og overgang peker til et steg i en userflow. | Userflows |
 | 3. Ordliste | `CONTEXT.md` | Presise begreper, uten implementasjon. | Userflows og domenemodell |
 | 4. Beslutninger | `docs/decisions/` | Valg som er vanskelige å reversere, med alternativer og konsekvenser. | Alle ledd |
+| Konvensjoner | `docs/design/feilmeldinger.md` | Feilmeldinger og hjelpetekster i skjema, med kilder. | 0008 og designhåndboken |
 | Research | `docs/research/` | Funn fra primærkilder som underlag for beslutninger. | Åpne spørsmål i leddene over |
 
 ## Metode
@@ -33,8 +34,8 @@ hvert valg skal kunne spores tilbake.
 | 6 | Selger lager utkast | Implementert (gammel modell) |
 | 7 | Administrator godkjenner selgersøknad | Implementert, **erstattet av 0007** |
 | 8–9 | Drift og lokal demo | Delvis |
-| 10 | Navigasjon, innlogging og utlogging | Besluttet, trinn 1 implementert |
-| 11 | Tilknytning til virksomhet | Utkast (0007) |
+| 10 | Navigasjon, innlogging og utlogging | Delvis implementert |
+| 11 | Tilknytning til virksomhet | Delvis implementert (#16) |
 | 12 | Annonse fra utkast til publisert | Utkast (0007) |
 | 13 | Bud | Utkast (0007) |
 | 14 | Handel og handelsverifisering | Utkast (0007) |
