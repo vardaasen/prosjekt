@@ -55,6 +55,11 @@ Sist oppdatert: 2026-09-24
   verifisering (0007, userflow 11). Personen lagres bare som
   Keycloak-subject. Vanlig «Logg inn» lander på Min side, og menyen viser
   «Min side».
+- Appmeny (#17): felles Vaadin-layout (`@Layout`, `AppLayout`) på alle
+  appsider med Min side, Administrasjon for administrator, Selgerområde for
+  `SELLER` inntil #19, Til nettstedet og Logg ut. Gjeldende side markeres med
+  `aria-current`. Markedsplassadministratoren er en egen innlogging som ikke
+  handler (0010) og har bare Administrasjon og Logg ut.
 
 ## Nåværende arkitektur
 

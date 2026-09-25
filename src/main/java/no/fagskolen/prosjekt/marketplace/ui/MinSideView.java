@@ -4,7 +4,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
@@ -13,6 +12,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationResult;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.security.AuthenticationContext;
@@ -21,7 +22,6 @@ import no.fagskolen.prosjekt.marketplace.affiliations.Affiliations;
 import no.fagskolen.prosjekt.marketplace.domain.Affiliation;
 import no.fagskolen.prosjekt.marketplace.domain.AffiliationStatus;
 import no.fagskolen.prosjekt.marketplace.domain.OrganisationNumber;
-import no.fagskolen.prosjekt.security.LogoutForm;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
 /**
@@ -31,14 +31,16 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 @Route("")
 @PermitAll
 @PageTitle("Min side | Havbruksbrukt")
-public class MinSideView extends VerticalLayout {
+public class MinSideView extends VerticalLayout implements BeforeEnterObserver {
 
     private final Affiliations affiliations;
+    private final AuthenticationContext authenticationContext;
     private final String personSubject;
     private final Grid<Affiliation> affiliationGrid = new Grid<>(Affiliation.class, false);
 
     public MinSideView(Affiliations affiliations, AuthenticationContext authenticationContext) {
         this.affiliations = affiliations;
+        this.authenticationContext = authenticationContext;
         this.personSubject = authenticationContext.getAuthenticatedUser(OidcUser.class)
                 .map(OidcUser::getSubject)
                 .orElseThrow(() -> new IllegalStateException("Min side krever en innlogget person."));
@@ -52,16 +54,23 @@ public class MinSideView extends VerticalLayout {
 
         setSpacing(true);
         setPadding(true);
-        add(new H1("Min side"), new LogoutForm());
-        if (authenticationContext.hasRole("SELLER")) {
-            add(new Anchor("/app/selgeromrade", "Gå til selgerområdet"));
-        }
-        add(new H2("Dine virksomheter"),
+        add(new H1("Min side"),
+                new H2("Dine virksomheter"),
                 new Paragraph("En virksomhet du registrerer, venter på verifisering av markedsplassadministratoren. "
                         + "Du kan lage utkast og gi bud før den er verifisert, men ikke publisere eller fullføre en handel."),
                 affiliationGrid,
                 new H2("Registrer virksomhet"),
                 registrationForm());
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        var roles = java.util.stream.Stream.of("ADMIN", "SELLER")
+                .filter(authenticationContext::hasRole)
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
+        if (!AppNavigation.mayUseMinSide(roles)) {
+            event.forwardTo(no.fagskolen.prosjekt.admin.AdminWorkspaceView.class);
+        }
     }
 
     private FormLayout registrationForm() {
@@ -93,7 +102,7 @@ public class MinSideView extends VerticalLayout {
                 Notification.show("Virksomheten er registrert og venter på verifisering.");
             }
         });
-        register.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        register.addThemeVariants(ButtonVariant.PRIMARY);
 
         var layout = new FormLayout(organisationNumber, name, location, register);
         layout.setMaxWidth("40rem");

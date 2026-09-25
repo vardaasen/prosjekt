@@ -26,7 +26,7 @@ beskriver et bredere målbilde enn den implementerte prototypen.
 | 7. Administrator godkjenner selgersøknad | Delvis | Server-rendered `/selgersoknad`, vedvarende `PENDING`-søknad, `/app/admin`, auditlogg, aktivering av selgerkonto, administratorutlogging og testet Keycloak Admin API-adapter | E-postverifisert selvregistrering, rate limiting og per-miljø service-konto/hemmelighet |
 | 8. Operatør installerer og bootstrapper miljø | Delvis | Lokal Compose, realm-import og beskyttet `/app/admin` | Produksjonsrunbook, hemmelighetsforvaltning og tilgangsregister |
 | 9. Lokal demo og rollebytte | Ferdig for lokal demo | Demo-identiteter, Keycloak-profil, søknad, godkjenning, reinnlogging og 403-/innloggingsfeil | Selvregistrering og produksjonsidentiteter |
-| 10. Navigasjon, innlogging og utlogging | Delvis | Offentlig meny med Min side, innlogging lander på Min side (administrator på Administrasjon), logg ut via Keycloak til forsiden | Egen appmeny (#17), retur etter innlogging midt i en oppgave, varsler. Se `navigasjon-og-innlogging.md` |
+| 10. Navigasjon, innlogging og utlogging | Delvis | Offentlig meny med Min side, egen appmeny på alle appsider, innlogging lander på Min side (administrator på Administrasjon), logg ut via Keycloak til forsiden | Retur etter innlogging midt i en oppgave, varsler. Se `navigasjon-og-innlogging.md` |
 | 11. Tilknytning til virksomhet | Delvis | Registrere virksomhet på Min side, gjenbruk av eksisterende virksomhet, tilknytning venter (#16) | Verifisering, avvisning og tilbaketrekking (#18) |
 | 12. Annonse fra utkast til publisert | Utkast (0007) | – | Alt |
 | 13. Bud | Utkast (0007) | – | Alt |

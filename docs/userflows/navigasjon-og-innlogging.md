@@ -27,7 +27,7 @@ alltid utlogget variant.
 | --- | --- |
 | Utlogget | Utforsk utstyr · Selg utstyr · Logg inn |
 | Innlogget | Utforsk utstyr · Selg utstyr · Min side · Logg ut |
-| Markedsplassadministrator | Utforsk utstyr · Selg utstyr · Min side · Administrasjon · Logg ut |
+| Markedsplassadministrator | Administrasjon · Logg ut (egen innlogging som ikke handler, 0010) |
 
 - «Selg utstyr» betyr alltid «start en annonse». Et utkast tilhører en
   innlogget person og en virksomhet, slik at det kan fortsettes fra en annen
@@ -43,7 +43,9 @@ alltid utlogget variant.
 etter 0007) vises ikke «Min side», og «Selg utstyr» går til `/selg` for alle.
 Menyen lenker aldri til en side personen får 403 på.
 
-Appen får sin egen meny med appfunksjoner, «Til nettstedet» og «Logg ut».
+Appen får sin egen meny: Min side, Til nettstedet og Logg ut for innloggede
+personer (og Selgerområde for `SELLER` inntil migreringen etter 0007);
+Administrasjon og Logg ut for markedsplassadministratoren (0010).
 
 ## Innlogging og utlogging
 

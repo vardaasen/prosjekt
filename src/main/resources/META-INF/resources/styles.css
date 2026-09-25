@@ -1,0 +1,52 @@
+@import "havbruksbrukt-handbook.css";
+
+/* Designhåndboken: serif i overskrifter, sans-serif i brødtekst. */
+h1,
+h2,
+h3 {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+/* Appmenyen (userflow 10). */
+.app-brand {
+  font-weight: 700;
+  margin-inline: 1rem;
+}
+
+nav.app-menu {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-inline: auto 1rem;
+}
+
+nav.app-menu a,
+nav.app-menu button {
+  color: var(--aura-accent-text-color);
+  font: inherit;
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-thickness: 0.12em;
+  text-underline-offset: 0.2em;
+}
+
+nav.app-menu a[aria-current="page"] {
+  text-decoration: none;
+  font-weight: 700;
+}
+
+nav.app-menu form {
+  margin: 0;
+}
+
+nav.app-menu button {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+nav.app-menu :is(a, button):focus-visible {
+  outline: 3px solid var(--vaadin-focus-ring-color);
+  outline-offset: 3px;
+}

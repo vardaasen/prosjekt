@@ -40,8 +40,8 @@ _Avoid_: Kunde, bruker
 
 **Markedsplassadministrator**:
 En autorisert person som verifiserer tilknytninger, godkjenner annonser og
-verifiserer handler. Rollen er forskjellig fra en
-Keycloak-plattformadministrator.
+verifiserer handler, med en egen innlogging som aldri handler. Rollen er
+forskjellig fra en Keycloak-plattformadministrator.
 _Avoid_: Keycloak-admin, superbruker
 
 ## Annonser

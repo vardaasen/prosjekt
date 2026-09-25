@@ -1,0 +1,31 @@
+/*
+ * Havbruksbrukt: designhåndbokens palett på Aura (skill aura-theme).
+ * Dyp sjø er primærfarge, Rust brukes til fokus og viktige varsler, Blekk til
+ * tekst. Høy kontrast mot målet 7:1 for tekst (0008). Systemfonter, ingen
+ * eksterne fontkall (0009).
+ */
+html {
+  color-scheme: light;
+  --aura-accent-color-dark: #5fb3a8;
+  --aura-accent-color-light: #0b4f4a;
+  --aura-background-color-dark: #1c1917;
+  --aura-background-color-light: #fbfaf7;
+  --aura-contrast-level: 2;
+  --aura-font-family: var(--aura-font-family-system);
+  --aura-neutral-light: #16201c;
+  --aura-orange: #8a3b12;
+}
+
+/* Nøytrale sekundærknapper, slik at primærhandlingen skiller seg ut. */
+:is(vaadin-button, vaadin-menu-bar-button, vaadin-upload-button):not([theme~="primary"], [theme~="tertiary"]) {
+  --aura-accent-color-light: var(--aura-neutral);
+  --aura-accent-color-dark: var(--aura-neutral);
+  --vaadin-button-background: var(--vaadin-background-container);
+  --vaadin-button-border-color: transparent;
+  --vaadin-button-shadow: none;
+}
+
+/* Fokus i Rust, som i designhåndboken. */
+html {
+  --vaadin-focus-ring-color: #8a3b12;
+}

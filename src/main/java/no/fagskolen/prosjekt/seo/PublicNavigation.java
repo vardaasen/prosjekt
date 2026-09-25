@@ -28,13 +28,15 @@ public record PublicNavigation(List<Link> links, boolean loggedIn) {
         // Kjøper og selger er ikke kontotyper (beslutningsnotat 0007), så menyen
         // skiller bare på innlogget og markedsplassadministrator (userflow 10).
         var links = new ArrayList<Link>();
+        if (administrator) {
+            // Egen innlogging som aldri handler og ikke surfer (userflow 10).
+            links.add(link("Administrasjon", "/app/admin", currentPath));
+            return new PublicNavigation(List.copyOf(links), true);
+        }
         links.add(link("Utforsk utstyr", "/utstyr", currentPath));
         links.add(link("Selg utstyr", "/selg", currentPath));
         if (loggedIn) {
             links.add(link("Min side", "/app", currentPath));
-        }
-        if (administrator) {
-            links.add(link("Administrasjon", "/app/admin", currentPath));
         }
         return new PublicNavigation(List.copyOf(links), loggedIn);
     }

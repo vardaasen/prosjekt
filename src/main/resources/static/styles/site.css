@@ -16,6 +16,12 @@ body {
   line-height: 1.6;
 }
 
+h1,
+h2,
+h3 {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
 a {
   color: var(--color-sea);
   text-decoration-thickness: 0.12em;
