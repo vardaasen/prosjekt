@@ -1,0 +1,15 @@
+flowchart TD
+    A[Innlogget person åpner Min side] --> B[Registrer virksomhet: organisasjonsnummer]
+    B --> C{Finnes virksomheten allerede?}
+    C -- Nei --> D[Oppgi navn og lokasjon, virksomheten opprettes]
+    C -- Ja --> E[Bruk eksisterende virksomhet]
+    D --> F[Tilknytning opprettes med status Venter]
+    E --> F
+    F --> G[Personen kan lage utkast og gi bud, men ikke publisere eller fullføre handel]
+    F --> H[Administrator vurderer tilknytningen]
+    H --> I{Beslutning}
+    I -- Verifiser --> J[Verifisert: personen varsles]
+    I -- Avvis med begrunnelse --> K[Avvist: personen varsles med begrunnelse]
+    J --> L[Personen kan sende annonser til godkjenning og fullføre handler]
+    J --> M{Senere: administrator trekker tilbake?}
+    M -- Ja --> N[Trukket tilbake: personen varsles, annonsene lever videre hos virksomheten]

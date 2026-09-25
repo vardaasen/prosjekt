@@ -49,10 +49,12 @@ _Avoid_: Keycloak-admin, superbruker
 **Annonse**:
 En presentasjon av ett konkret tilbud om brukt utstyr, med
 utstyrsopplysninger, pris, lokasjon, tilstand, selger og dokumentasjon.
+Annonsen eies av virksomheten, ikke av personen som laget den.
 _Avoid_: Produkt, oppføring, listing
 
 **Utstyr**:
-Det fysiske akvakulturutstyret som tilbys i en annonse.
+Det fysiske akvakulturutstyret som tilbys i en annonse. Utstyret beskrives i
+annonsen og har ingen egen identitet på markedsplassen.
 _Avoid_: Produkt, vare
 
 **Utstyrskategori**:
@@ -80,14 +82,26 @@ godkjenning.
 _Avoid_: Moderering, review
 
 **Publiseringsstatus**:
-Annonsens livssyklus: utkast, til godkjenning, publisert eller arkivert. Bare
-en publisert annonse er offentlig synlig.
+Annonsens livssyklus: utkast, til godkjenning, publisert, under handel eller
+arkivert. Bare en publisert annonse, eller en under handel, er offentlig
+synlig, og bare en publisert annonse tar imot bud.
 _Avoid_: Synlighetsstatus, annonsetilstand
 
 **Dokumentasjon**:
 Materiale knyttet til en annonse som underbygger utstyrets tilstand, historikk
 eller regelverksetterlevelse.
 _Avoid_: Vedlegg, bevis
+
+**Verifiseringsgrunnlag**:
+Markedsplassadministratorens registrerte vurdering av dokumentasjonen til en
+annonse, brukt ved annonsegodkjenning og handelsverifisering. Synlig for
+administratoren og virksomheten, aldri publisert.
+_Avoid_: Utstyrshistorikk, servicelogg
+
+**Dokumentasjonsvurdering**:
+Én vurdering i et verifiseringsgrunnlag: hva slags dokumentasjon det er, hvem
+som har utstedt den, når, hvor lenge den gjelder og hva den viser.
+_Avoid_: Sjekkliste, merknad
 
 ## Handel og dialog
 

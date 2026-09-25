@@ -1,0 +1,14 @@
+flowchart TD
+    A[Offentlig side] --> B{Innlogget?}
+    B -- Nei --> C[Meny: Logg inn]
+    C --> D[Keycloak-innlogging]
+    D --> A
+    B -- Ja --> E{Rolle}
+    E -- Innlogget --> G[Min side /app]
+    E -- Markedsplassadministrator --> H[Administrasjon /app/admin]
+    G --> I[Appmeny]
+    H --> I
+    I -- Til nettstedet --> A
+    I -- Logg ut --> J[POST /logout via Keycloak end_session]
+    A -- Logg ut --> J
+    J --> K[Forsiden, utlogget]

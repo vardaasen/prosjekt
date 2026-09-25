@@ -1,0 +1,11 @@
+flowchart TD
+    A[Selger aksepterer bud] --> B[Handel til verifisering]
+    B --> C[Annonsen merkes under handel og tar ikke imot nye bud]
+    B --> D[Administrator kontrollerer handelen]
+    D --> E{Begge tilknytninger verifisert, annonse og bud stemmer, verifiseringsgrunnlag i orden?}
+    E -- Ja --> F[Gjennomført: begge parter varsles]
+    F --> G[Annonsen arkiveres]
+    F --> H[Betaling skjer utenfor markedsplassen]
+    E -- Nei --> I[Avvist: begge parter varsles med begrunnelse]
+    I --> J[Budet avslås, annonsen publiseres igjen]
+    J --> K[Selger kan akseptere et annet bud]

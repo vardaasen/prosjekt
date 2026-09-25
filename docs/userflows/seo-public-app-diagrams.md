@@ -27,6 +27,10 @@ beskriver et bredere målbilde enn den implementerte prototypen.
 | 8. Operatør installerer og bootstrapper miljø | Delvis | Lokal Compose, realm-import og beskyttet `/app/admin` | Produksjonsrunbook, hemmelighetsforvaltning og tilgangsregister |
 | 9. Lokal demo og rollebytte | Ferdig for lokal demo | Demo-identiteter, Keycloak-profil, søknad, godkjenning, reinnlogging og 403-/innloggingsfeil | Selvregistrering og produksjonsidentiteter |
 | 10. Navigasjon, innlogging og utlogging | Besluttet | Logg ut via Keycloak til forsiden | Meny etter innlogging og administratorrolle, Min side, egen appmeny, retur etter innlogging, varsler. Se `navigasjon-og-innlogging.md` |
+| 11. Tilknytning til virksomhet | Utkast (0007) | – | Alt |
+| 12. Annonse fra utkast til publisert | Utkast (0007) | – | Alt |
+| 13. Bud | Utkast (0007), åpne spørsmål | – | Alt |
+| 14. Handel og handelsverifisering | Utkast (0007) | – | Alt |
 
 Diagram 6 dekker den implementerte selgerflyten som ikke fantes da de
 opprinnelige diagrammene ble laget.
@@ -231,4 +235,115 @@ flowchart TD
     P --> Q[Åpne /app som SELLER]
     C -- seller-demo på /app/admin --> R[Vis 403-side]
     H -- Innlogging avbrutt --> S[Vis innloggingsfeil med nytt forsøk]
+```
+
+## 10. Navigasjon, innlogging og utlogging
+
+Detaljer, menyer per person og grensen mellom offentlig flate og app: `navigasjon-og-innlogging.md`.
+
+```mermaid
+flowchart TD
+    A[Offentlig side] --> B{Innlogget?}
+    B -- Nei --> C[Meny: Logg inn]
+    C --> D[Keycloak-innlogging]
+    D --> A
+    B -- Ja --> E{Rolle}
+    E -- Innlogget --> G[Min side /app]
+    E -- Markedsplassadministrator --> H[Administrasjon /app/admin]
+    G --> I[Appmeny]
+    H --> I
+    I -- Til nettstedet --> A
+    I -- Logg ut --> J[POST /logout via Keycloak end_session]
+    A -- Logg ut --> J
+    J --> K[Forsiden, utlogget]
+```
+
+## 11. Tilknytning til virksomhet
+
+Beslutningsnotat 0007. Avvist og trukket tilbake er ulike utfall (S3).
+
+```mermaid
+flowchart TD
+    A[Innlogget person åpner Min side] --> B[Registrer virksomhet: organisasjonsnummer]
+    B --> C{Finnes virksomheten allerede?}
+    C -- Nei --> D[Oppgi navn og lokasjon, virksomheten opprettes]
+    C -- Ja --> E[Bruk eksisterende virksomhet]
+    D --> F[Tilknytning opprettes med status Venter]
+    E --> F
+    F --> G[Personen kan lage utkast og gi bud, men ikke publisere eller fullføre handel]
+    F --> H[Administrator vurderer tilknytningen]
+    H --> I{Beslutning}
+    I -- Verifiser --> J[Verifisert: personen varsles]
+    I -- Avvis med begrunnelse --> K[Avvist: personen varsles med begrunnelse]
+    J --> L[Personen kan sende annonser til godkjenning og fullføre handler]
+    J --> M{Senere: administrator trekker tilbake?}
+    M -- Ja --> N[Trukket tilbake: personen varsles, annonsene lever videre hos virksomheten]
+```
+
+## 12. Annonse fra utkast til publisert
+
+Beslutningsnotat 0007. Ingen egen status for avslått; en uakseptabel annonse arkiveres (S4).
+
+```mermaid
+flowchart TD
+    A[Person trykker Selg utstyr] --> B{Innlogget?}
+    B -- Nei --> C[Bekreft e-post: registrering eller innlogging, #21]
+    C --> D
+    B -- Ja --> D{Tilknytning til mer enn én virksomhet?}
+    D -- Ja --> E[Velg virksomhet]
+    D -- Nei --> F[Nytt utkast for virksomheten]
+    E --> F
+    F --> G[Fyll ut tekst, validering ved feltet]
+    G --> H[Legg til bilder og dokumentasjon, #14]
+    H --> I[Lagre utkast, fortsett senere fra en annen enhet]
+    I --> J{Verifisert tilknytning og teksten består valideringen?}
+    J -- Nei --> K[Vis hva som mangler: verifisering eller felt]
+    K --> G
+    J -- Ja --> L[Send til godkjenning]
+    L --> M[Administrator vurderer og registrerer verifiseringsgrunnlag]
+    M --> N{Godkjent?}
+    N -- Nei --> O[Tilbake til utkast med tilbakemelding per felt, personen varsles]
+    O --> G
+    N -- Ja --> P[Publisert: offentlig i katalogen, personen varsles]
+```
+
+## 13. Bud
+
+Et bud kan gis før tilknytningen er verifisert (0007). Stiplete linjer er åpne spørsmål (S6).
+
+```mermaid
+flowchart TD
+    A[Kjøper åpner publisert annonse] --> B[Gi bud]
+    B --> C{Innlogget?}
+    C -- Nei --> D[Logg inn, tilbake til annonsen]
+    D --> E
+    C -- Ja --> E{Har tilknytning?}
+    E -- Nei --> F[Registrer virksomhet, tilknytning Venter, userflow 11]
+    F --> G
+    E -- Ja --> G[Velg virksomhet og beløp]
+    G --> H[Bud gitt: selgeren varsles]
+    H --> I{Hva skjer videre?}
+    I -- Selger aksepterer --> J[Handel, userflow 14]
+    I -- Selger avslår --> K[Avslått: kjøper varsles]
+    I -- Kjøper trekker budet --> L[Trukket: selger varsles]
+    I -. Åpent S6: tidsfrist? .-> M[Utløpt]
+    J -. Åpent S6: faller andre bud bort? .-> N[Andre bud på annonsen]
+```
+
+## 14. Handel og handelsverifisering
+
+Beslutningsnotat 0007. Utfall besluttet i grilling (S5/S7).
+
+```mermaid
+flowchart TD
+    A[Selger aksepterer bud] --> B[Handel til verifisering]
+    B --> C[Annonsen merkes under handel og tar ikke imot nye bud]
+    B --> D[Administrator kontrollerer handelen]
+    D --> E{Begge tilknytninger verifisert, annonse og bud stemmer, verifiseringsgrunnlag i orden?}
+    E -- Ja --> F[Gjennomført: begge parter varsles]
+    F --> G[Annonsen arkiveres]
+    F --> H[Betaling skjer utenfor markedsplassen]
+    E -- Nei --> I[Avvist: begge parter varsles med begrunnelse]
+    I --> J[Budet avslås, annonsen publiseres igjen]
+    J --> K[Selger kan akseptere et annet bud]
 ```
