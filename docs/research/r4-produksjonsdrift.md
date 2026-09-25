@@ -132,7 +132,7 @@ Clever Cloud-merknader:
 
 Med Clever Cloud Keycloak add-on håndteres image, database og proxy av leverandøren: standardstørrelse er Java S + PostgreSQL XXS, egendefinert domene settes med `access-domain`, realms kan importeres fra FS Bucket, admin-bruker må bytte passord ved første innlogging, og det finnes IP-filtrering per endepunkt ([Keycloak add-on](https://www.clever.cloud/developers/doc/deploy/services/keycloak/)). Vi må likevel verifisere at add-on setter `hostname`/proxy riktig og at `/admin` kan begrenses **[Ikke bekreftet i detalj]**.
 
-Øvrig: realm-import fra `infra/keycloak` må ikke inneholde produksjonshemmeligheter i Git; klienthemmeligheten til appen settes som miljøvariabel. Om `--import-realm` oppfører seg likt under `start` som `start-dev` er **[Ikke bekreftet – import-dok ikke lest]**.
+Øvrig: `infra/keycloak/realm-havbruksbrukt.json` er kun for lokal utvikling og skal ikke importeres i staging eller produksjon. Den inneholder demobrukere med kjente passord, blant annet `admin-demo` med `ADMIN`-rollen, som gir tilgang til administrasjonen. Opprett en separat produksjons-realm og klient uten demobrukere, og bootstrap navngitte administratorer utenfor appens HTTP-grensesnitt og repository (0006). Realm-import må ikke inneholde produksjonshemmeligheter i Git; klienthemmeligheten til appen settes som miljøvariabel. Om `--import-realm` oppfører seg likt under `start` som `start-dev` er **[Ikke bekreftet – import-dok ikke lest]**.
 
 ---
 
