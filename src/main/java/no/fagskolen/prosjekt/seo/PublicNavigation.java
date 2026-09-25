@@ -34,7 +34,9 @@ public record PublicNavigation(List<Link> links, boolean loggedIn) {
             return new PublicNavigation(List.copyOf(links), true);
         }
         links.add(link("Utforsk utstyr", "/utstyr", currentPath));
-        links.add(link("Selg utstyr", "/selg", currentPath));
+        // «Selg utstyr» starter alltid en annonse: utlogget med forklaring på /selg,
+        // innlogget i appen, der salget begynner på Min side (userflow 10).
+        links.add(link("Selg utstyr", loggedIn ? "/app" : "/selg", currentPath));
         if (loggedIn) {
             links.add(link("Min side", "/app", currentPath));
         }
