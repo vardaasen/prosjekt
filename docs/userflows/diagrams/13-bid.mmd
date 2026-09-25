@@ -1,0 +1,18 @@
+flowchart TD
+    A[Kjøper åpner publisert annonse] --> B[Gi bud]
+    B --> C{Innlogget?}
+    C -- Nei --> D[Logg inn, tilbake til annonsen]
+    D --> E
+    C -- Ja --> E{Har tilknytning?}
+    E -- Nei --> F[Registrer virksomhet, tilknytning Venter, userflow 11]
+    F --> G
+    E -- Ja --> G[Velg virksomhet og beløp]
+    G --> H[Bud gitt: selgeren varsles]
+    H --> I{Hva skjer videre?}
+    I -- Selger aksepterer --> J[Handel, userflow 14]
+    I -- Selger avslår --> K[Avslått: kjøper varsles]
+    I -- Kjøper trekker budet --> L[Trukket: selger varsles]
+    J --> M[Andre bud på annonsen settes på vent]
+    M --> N{Utfall av handelen}
+    N -- Gjennomført --> O[Budene på vent faller bort: kjøperne varsles]
+    N -- Avvist --> P[Budene på vent blir aktive igjen]

@@ -15,11 +15,19 @@ Method after Thoughtworks' "Domain modeling: what you need to know before
 coding": linguistic analysis, entities, relationships, multiplicity,
 attributes and operations, then diagrams.
 
-## 1. Gather the domain texts
+## 1. Start from the userflows
 
-Read fully: `CONTEXT.md`, `docs/decisions/*.md`, `docs/userflows/*`, and the
-design handbook in `DesignMarketPlace/` if it is present. Note each source
-so every modelling choice can be traced back to a sentence.
+The domain model is a refinement of the userflows, not a parallel design
+(see `docs/design/README.md`). Read the numbered userflows in
+`docs/userflows/` first; they are the primary input. Then read `CONTEXT.md`,
+`docs/decisions/*.md` and the design handbook in `DesignMarketPlace/` if it
+is present.
+
+If a part of the domain has no userflow yet, stop and draw the userflow
+first (Mermaid `flowchart`, one `.mmd` per flow in
+`docs/userflows/diagrams/`, numbered, with open questions as dashed edges).
+Never model entities or life cycles that no flow exercises, and never ask
+the user to choose between life-cycle options without a flow to look at.
 
 ## 2. Linguistic analysis
 
@@ -29,7 +37,8 @@ Make two tables in the model file:
   life of its own), *verdiobjekt* (defined only by its values, e.g. a price
   or an organisation number), *attributt*, *rolle* (a part something plays
   in a relationship, not a thing of its own), or *utenfor* (outside the
-  domain, e.g. Keycloak, UI). Quote the source sentence.
+  domain, e.g. Keycloak, UI). Quote the source sentence, preferably the
+  userflow step (e.g. "userflow 13, steg G").
 - **Verbs and verb phrases** → candidate relationships or operations
   ("en person *handler for* en virksomhet", "administratoren *verifiserer*
   en tilknytning").
@@ -66,6 +75,7 @@ Write a Mermaid `classDiagram`:
 For every entity with a status or life cycle (for example Tilknytning,
 Annonse/Publiseringsstatus, Bud, Handel), write a Mermaid `stateDiagram-v2`
 with the transitions, who triggers each one, and the rule that guards it.
+Every transition must correspond to a step in a userflow; name the flow.
 Every status value must be a term from `CONTEXT.md`.
 
 ## 5. Personal-data inventory (decision note 0009)
@@ -85,6 +95,7 @@ trades) are recorded with their source or marked as open.
 
 ## Checks before finishing
 
+- Every class and every transition traces to a userflow step.
 - Every class and status in the diagrams is a `CONTEXT.md` term, and every
   `CONTEXT.md` term is either in the model or explicitly *utenfor*.
 - Every multiplicity has a source or a scenario.
