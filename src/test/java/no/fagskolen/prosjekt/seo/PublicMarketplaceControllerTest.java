@@ -151,15 +151,47 @@ class PublicMarketplaceControllerTest {
     }
 
     @Test
-    void rejectsLogoutWithoutCsrfToken() throws Exception {
+    void rejectsLogoutWithoutCsrfTokenAndExplainsThatTheSessionHadExpired() throws Exception {
+        // Utlogging med utløpt økt har ugyldig CSRF-token (#43): forespørselen avvises
+        // fortsatt, men personen sendes til en forklaring i stedet for en feilside.
         mockMvc.perform(post("/logout").with(keycloakOidcLogin()))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("/okt-utlopt"));
+    }
+
+    @Test
+    void explainsAnExpiredSessionInPlainLanguage() throws Exception {
+        mockMvc.perform(get("/okt-utlopt"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Økten din var utløpt")))
+                .andExpect(content().string(containsString("ble ikke utført")))
+                .andExpect(content().string(containsString("href=\"/logg-inn\"")))
+                .andExpect(content().string(containsString("<meta name=\"robots\" content=\"noindex,nofollow\">")));
+    }
+
+    @Test
+    void showsTheAccessDeniedPageForRefusedPostsInsteadOfMethodNotAllowed() throws Exception {
+        mockMvc.perform(post("/tilgang-nektet").with(csrf()))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string(containsString("Du har ikke tilgang til denne siden")));
+    }
+
+    @Test
+    void replacesTheWhitelabelErrorPageWithAnAccessibleGenericPage() throws Exception {
+        mockMvc.perform(get("/error")
+                        .accept(org.springframework.http.MediaType.TEXT_HTML)
+                        .requestAttr("jakarta.servlet.error.status_code", 500)
+                        .requestAttr("jakarta.servlet.error.request_uri", "/utstyr"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string(containsString("Noe gikk galt")))
+                .andExpect(content().string(containsString("href=\"/\"")))
+                .andExpect(content().string(not(containsString("Whitelabel"))));
     }
 
     @Test
     void rejectsLogoutWithVaadinRequestTypeParameterButNoCsrfToken() throws Exception {
         mockMvc.perform(post("/logout?v-r=uidl").with(keycloakOidcLogin()))
-                .andExpect(status().isForbidden());
+                .andExpect(redirectedUrl("/okt-utlopt"));
     }
 
     @Test
@@ -168,7 +200,7 @@ class PublicMarketplaceControllerTest {
                         .with(oidcLogin().idToken(token -> token.subject("forged-subject")))
                         .param("sellerName", "Forfalsket AS")
                         .param("sellerLocation", "Narvik"))
-                .andExpect(status().isForbidden());
+                .andExpect(redirectedUrl("/okt-utlopt"));
     }
 
     @Test
