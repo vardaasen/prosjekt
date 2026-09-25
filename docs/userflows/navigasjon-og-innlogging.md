@@ -1,7 +1,7 @@
 # Userflow 10: Navigasjon, innlogging og utlogging
 
 Status: **Besluttet, ikke implementert.** Avklart 2026-09-24 i to
-grilling-økter; revidert etter beslutningsnotat 0007. Beskriver hvor hver lenke tar hver bruker, og hvor grensen går
+grilling-økter; revidert etter beslutningsnotat 0007 og manuell test. Beskriver hvor hver lenke tar hver bruker, og hvor grensen går
 mellom den offentlige SEO-flaten og Vaadin-appen.
 
 ## Grensen mellom offentlig flate og app
@@ -9,10 +9,13 @@ mellom den offentlige SEO-flaten og Vaadin-appen.
 | Flate | Stier | Teknologi | Innhold |
 | --- | --- | --- | --- |
 | Offentlig (SEO) | `/`, `/utstyr`, `/utstyr/{slug}`, `/selg`, sitemap, robots, feilsider | Spring MVC + Thymeleaf | Alt som skal kunne finnes, leses og deles uten innlogging |
-| App | `/app/**` | Vaadin Flow | Alt som krever innlogging: Min side, utkast, bud, handler, administrasjon |
+| App | `/app/**` | Vaadin Flow | Interaktivt arbeid: Min side, utkast, bud, handler, administrasjon |
 
-Regel: en side som krever innlogging og aldri skal indekseres hører hjemme i
-appen. `/selg` er offentlig fordi den forklarer hvordan man selger.
+Regel: innhold som skal kunne finnes og deles hører hjemme på den offentlige
+flaten; interaktivt arbeid hører hjemme i appen og indekseres aldri
+(beslutningsnotat 0002: «innloggede og interaktive appflater»). Appen kan ha
+ruter uten innlogging; innlogging kreves først når den trengs. `/selg` er
+offentlig fordi den forklarer hvordan man selger.
 
 ## Meny
 
@@ -26,8 +29,12 @@ alltid utlogget variant.
 | Innlogget | Utforsk utstyr · Selg utstyr · Min side · Logg ut |
 | Markedsplassadministrator | Utforsk utstyr · Selg utstyr · Min side · Administrasjon · Logg ut |
 
-- «Selg utstyr» betyr alltid «start en annonse»: utlogget til `/selg`
-  (forklaring og innlogging), innlogget rett til et nytt utkast i appen.
+- «Selg utstyr» betyr alltid «start en annonse». Et utkast tilhører en
+  innlogget person og en virksomhet, slik at det kan fortsettes fra en annen
+  enhet (telefon eller datamaskin). Første steg er derfor å bekrefte
+  e-postadressen (rask registrering eller innlogging), deretter et nytt
+  utkast i appen. Det lagres ingenting og lastes ikke opp filer før
+  innlogging.
 - «Min side» (`/app`) samler personens virksomheter og tilknytninger
   (venter/verifisert), utkast og annonser til godkjenning, bud og handler.
 - «Administrasjon» → `/app/admin`.
@@ -40,8 +47,13 @@ Appen får sin egen meny med appfunksjoner, «Til nettstedet» og «Logg ut».
 
 ## Innlogging og utlogging
 
-- **Logg inn** (offentlig meny): gå via Keycloak og tilbake til siden der
-  brukeren trykket «Logg inn». Menyen viser deretter rollelenken.
+- **Etter innlogging, etter oppgave og rolle:**
+  - Markedsplassadministrator går alltid til Administrasjon. Grensen rundt
+    administrasjonen holdes stram; en administrator skal ikke surfe som
+    administrator.
+  - En person som logger inn midt i en oppgave (en annonse, et bud)
+    fortsetter der den var.
+  - Vanlig «Logg inn» fra menyen går til Min side.
 - **Beskyttet side** (f.eks. `/app/admin`) uten innlogging: via Keycloak og
   tilbake til den forespurte siden.
 - **Logg ut** (begge menyer): `POST /logout` med CSRF-token, via Keycloaks
@@ -78,6 +90,10 @@ personen kan ikke antas å ha siden åpen.
   handling og leder til riktig sted på Min side.
 
 ## Gjenstår å avklare
+
+- Om Keycloak kan gi innlogging uten passord via e-post (lenke eller kode)
+  uten utvidelser. Avgjør hvor lav terskelen for «Selg utstyr» kan bli.
+- Senere: mobilapp som lagrer utkast lokalt og laster opp etter innlogging.
 
 - Innhold og avsender for e-postvarselet.
 - Om avslag også skal gi live-varsel på åpen side.
