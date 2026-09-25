@@ -10,6 +10,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -157,7 +158,9 @@ public class PublicMarketplaceController {
         return local ? returnTo : "/";
     }
 
-    @GetMapping("/tilgang-nektet")
+    // Spring Security videresender avviste forespørsler hit med samme metode, så
+    // siden må svare på alle metoder; ellers blir en avvist POST til 405 (#43).
+    @RequestMapping("/tilgang-nektet")
     public String accessDenied(Model model, HttpServletResponse response) {
         response.setStatus(HttpStatus.FORBIDDEN.value());
         model.addAttribute("title", "Ingen tilgang");
@@ -165,6 +168,15 @@ public class PublicMarketplaceController {
         model.addAttribute("robots", "noindex,nofollow");
         model.addAttribute("canonicalUrl", absoluteUrl("/tilgang-nektet"));
         return "error/403";
+    }
+
+    @GetMapping("/okt-utlopt")
+    public String sessionExpired(Model model) {
+        model.addAttribute("title", "Økten din var utløpt");
+        model.addAttribute("description", "Handlingen ble ikke utført fordi økten var utløpt.");
+        model.addAttribute("robots", "noindex,nofollow");
+        model.addAttribute("canonicalUrl", absoluteUrl("/okt-utlopt"));
+        return "error/session-expired";
     }
 
     @GetMapping("/innlogging-feilet")

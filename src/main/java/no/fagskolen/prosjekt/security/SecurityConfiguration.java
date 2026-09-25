@@ -9,11 +9,17 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.access.AccessDeniedHandlerImpl;
+import org.springframework.security.web.access.DelegatingAccessDeniedHandler;
+import org.springframework.security.web.csrf.CsrfException;
 
 import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
 
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -39,7 +45,7 @@ class SecurityConfiguration {
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userAuthoritiesMapper(keycloakRoleMapper)))
                 .exceptionHandling(exceptionHandling -> exceptionHandling
-                        .accessDeniedPage("/tilgang-nektet"))
+                        .accessDeniedHandler(accessDeniedHandler()))
                 // Vaadin er kartlagt på /app/* og sikres med Vaadins egen integrasjon:
                 // - @RolesAllowed håndheves ved hver navigasjon (NavigationAccessControl).
                 //   URL-regler ser bare første sidelasting; navigasjon inne i Vaadin går
@@ -59,6 +65,17 @@ class SecurityConfiguration {
                         .oauth2LoginPage("/oauth2/authorization/keycloak", "{baseUrl}/")
                         .anyRequest(AuthorizedUrl::permitAll));
         return http.build();
+    }
+
+    // Et ugyldig CSRF-token betyr som regel at økten har utløpt, for eksempel når
+    // «Logg ut» trykkes etter omstart. Forespørselen avvises fortsatt, men personen
+    // får en forklaring (#43). Andre avvisninger viser 403-siden.
+    private static AccessDeniedHandler accessDeniedHandler() {
+        var accessDeniedPage = new AccessDeniedHandlerImpl();
+        accessDeniedPage.setErrorPage("/tilgang-nektet");
+        var handlers = new LinkedHashMap<Class<? extends AccessDeniedException>, AccessDeniedHandler>();
+        handlers.put(CsrfException.class, (request, response, exception) -> response.sendRedirect("/okt-utlopt"));
+        return new DelegatingAccessDeniedHandler(handlers, accessDeniedPage);
     }
 
     @Bean

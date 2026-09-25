@@ -37,6 +37,8 @@ designhåndbokens krav om «synlige etiketter og forståelige feilmeldinger».
 | Organisasjonsnummer | ikke ni sifre | Organisasjonsnummeret må være ni sifre. |
 | Organisasjonsnummer | kontrollsifferet stemmer ikke | Sjekk at organisasjonsnummeret er skrevet riktig. |
 | Navn på virksomheten | tomt | Skriv inn navnet på virksomheten. |
+| Hele siden (`/okt-utlopt`) | handling sendt med utløpt økt, for eksempel «Logg ut» etter omstart | Økten din var utløpt. Handlingen ble ikke utført, fordi økten din hadde utløpt. Hvis du prøvde å logge ut, er du allerede logget ut av Havbruksbrukt. |
+| Hele siden (`error.html`) | uventet feil | Noe gikk galt. Siden kunne ikke vises akkurat nå. Prøv igjen om litt, eller gå tilbake til markedsplassen. |
 
 Nye meldinger legges inn i tabellen når de innføres, og testes der det er
 praktisk (se `OrganisationNumberMessagesTest`).
