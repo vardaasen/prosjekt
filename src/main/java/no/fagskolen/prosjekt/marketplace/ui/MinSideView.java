@@ -20,7 +20,6 @@ import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
 import no.fagskolen.prosjekt.marketplace.affiliations.Affiliations;
 import no.fagskolen.prosjekt.marketplace.domain.Affiliation;
-import no.fagskolen.prosjekt.marketplace.domain.AffiliationStatus;
 import no.fagskolen.prosjekt.marketplace.domain.OrganisationNumber;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
@@ -48,7 +47,10 @@ public class MinSideView extends VerticalLayout implements BeforeEnterObserver {
         affiliationGrid.addColumn(affiliation -> affiliation.business().name()).setHeader("Virksomhet");
         affiliationGrid.addColumn(affiliation -> affiliation.business().organisationNumber().value())
                 .setHeader("Organisasjonsnummer");
-        affiliationGrid.addColumn(affiliation -> statusText(affiliation.status())).setHeader("Status");
+        affiliationGrid.addColumn(affiliation -> AffiliationTexts.status(affiliation.status())).setHeader("Status");
+        // Begrunnelsen for avvisning eller tilbaketrekking vises til personen (#18).
+        affiliationGrid.addColumn(affiliation -> affiliation.reason() == null ? "" : affiliation.reason())
+                .setHeader("Begrunnelse");
         affiliationGrid.setAllRowsVisible(true);
         refresh();
 
@@ -111,15 +113,6 @@ public class MinSideView extends VerticalLayout implements BeforeEnterObserver {
 
     private void refresh() {
         affiliationGrid.setItems(affiliations.findFor(personSubject));
-    }
-
-    static String statusText(AffiliationStatus status) {
-        return switch (status) {
-            case PENDING -> "Venter på verifisering";
-            case VERIFIED -> "Verifisert";
-            case REJECTED -> "Avvist";
-            case WITHDRAWN -> "Trukket tilbake";
-        };
     }
 
     /** Skjemadata for Binder; bare i visningen, aldri lagret. */

@@ -16,6 +16,22 @@ interface AffiliationJpaRepository extends JpaRepository<AffiliationJpaEntity, U
     List<AffiliationJpaEntity> findForPerson(String personSubject);
 
     @Query("""
+            select a from AffiliationJpaEntity a join fetch a.business
+            where a.status = no.fagskolen.prosjekt.marketplace.domain.AffiliationStatus.PENDING
+            order by a.registeredAt""")
+    List<AffiliationJpaEntity> findPending();
+
+    @Query("""
+            select a from AffiliationJpaEntity a join fetch a.business
+            order by a.registeredAt desc""")
+    List<AffiliationJpaEntity> findAllWithBusiness();
+
+    @Query("""
+            select a from AffiliationJpaEntity a join fetch a.business
+            where a.id = :id""")
+    Optional<AffiliationJpaEntity> findWithBusiness(UUID id);
+
+    @Query("""
             select a from AffiliationJpaEntity a join fetch a.business b
             where a.personSubject = :personSubject and b.id = :businessId""")
     Optional<AffiliationJpaEntity> findForPersonAndBusiness(String personSubject, UUID businessId);

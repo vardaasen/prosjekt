@@ -35,3 +35,12 @@ administrerer og handler, bruker to innlogginger.
 - Min side sender markedsplassadministratoren videre til Administrasjon.
 - Senere funksjoner (tilknytning, utkast, bud) skal avvise
   markedsplassadministratoren på serveren, ikke bare skjule knapper.
+
+## Tillegg: flere administratorer (2026-09-25, #18)
+
+Det kan være flere markedsplassadministratorer, av hensyn til
+tilgjengelighet. Siden administratoren ikke handler, gjelder det ikke
+egenverifisering. Optimistisk låsing hindrer at to administratorer avgjør den
+samme tilknytningen samtidig; den andre får beskjed om at den allerede er
+avgjort. Auditsporet viser hvilken administrator som avgjorde. Det er ikke
+krav om fire øyne.

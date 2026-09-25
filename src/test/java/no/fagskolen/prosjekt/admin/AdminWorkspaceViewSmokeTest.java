@@ -1,6 +1,10 @@
 package no.fagskolen.prosjekt.admin;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasText;
+import no.fagskolen.prosjekt.marketplace.affiliations.Affiliations;
 import no.fagskolen.prosjekt.marketplace.applications.SellerApplications;
+import no.fagskolen.prosjekt.marketplace.people.PersonDirectory;
 import no.fagskolen.prosjekt.marketplace.applications.SellerRoleProvisioner;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +18,10 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.List;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 /**
@@ -34,9 +42,34 @@ class AdminWorkspaceViewSmokeTest {
     @Autowired
     private SellerApplications sellerApplications;
 
+    @Autowired
+    private Affiliations affiliations;
+
+    @Autowired
+    private PersonDirectory personDirectory;
+
     @Test
     void constructsWithoutThrowing() {
-        assertThatCode(() -> new AdminWorkspaceView(sellerApplications)).doesNotThrowAnyException();
+        assertThatCode(() -> new AdminWorkspaceView(sellerApplications, affiliations, personDirectory))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void keepsAffiliationsAndTheOldSellerApplicationsClearlyApart() {
+        var view = new AdminWorkspaceView(sellerApplications, affiliations, personDirectory);
+
+        assertThat(headings(view)).containsSubsequence(
+                "Tilknytninger som venter",
+                "Alle tilknytninger",
+                "Selgersøknader (gammel ordning, fjernes)");
+    }
+
+    private static List<String> headings(Component root) {
+        return Stream.concat(Stream.of(root), root.getChildren().flatMap(child -> Stream.concat(Stream.of(child),
+                        child.getChildren())))
+                .filter(component -> component instanceof HasText && component.getElement().getTag().equals("h2"))
+                .map(component -> component.getElement().getText())
+                .toList();
     }
 
     @TestConfiguration

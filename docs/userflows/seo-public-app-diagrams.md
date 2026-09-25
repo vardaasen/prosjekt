@@ -27,7 +27,7 @@ beskriver et bredere målbilde enn den implementerte prototypen.
 | 8. Operatør installerer og bootstrapper miljø | Delvis | Lokal Compose, realm-import og beskyttet `/app/admin` | Produksjonsrunbook, hemmelighetsforvaltning og tilgangsregister |
 | 9. Lokal demo og rollebytte | Ferdig for lokal demo | Demo-identiteter, Keycloak-profil, søknad, godkjenning, reinnlogging og 403-/innloggingsfeil | Selvregistrering og produksjonsidentiteter |
 | 10. Navigasjon, innlogging og utlogging | Delvis | Offentlig meny med Min side, egen appmeny på alle appsider, innlogging lander på Min side (administrator på Administrasjon), logg ut via Keycloak til forsiden | Retur etter innlogging midt i en oppgave, varsler. Se `navigasjon-og-innlogging.md` |
-| 11. Tilknytning til virksomhet | Delvis | Registrere virksomhet på Min side, gjenbruk av eksisterende virksomhet, tilknytning venter (#16) | Verifisering, avvisning og tilbaketrekking (#18) |
+| 11. Tilknytning til virksomhet | Implementert uten varsler | Registrere virksomhet på Min side (#16); administratoren verifiserer, avviser og trekker tilbake med begrunnelse og auditspor, og personen ser status og begrunnelse på Min side (#18) | E-postvarsel (#15) |
 | 12. Annonse fra utkast til publisert | Utkast (0007) | – | Alt |
 | 13. Bud | Utkast (0007) | – | Alt |
 | 14. Handel og handelsverifisering | Utkast (0007) | – | Alt |
