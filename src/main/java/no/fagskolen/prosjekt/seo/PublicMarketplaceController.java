@@ -17,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.beans.factory.annotation.Value;
 import jakarta.servlet.http.HttpServletResponse;
 import no.fagskolen.prosjekt.marketplace.domain.ListingCondition;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
@@ -134,11 +135,15 @@ public class PublicMarketplaceController {
     }
 
     // Krever innlogging (SecurityConfiguration), så en anonym bruker sendes via
-    // Keycloak og tilbake hit, og videre til siden der «Logg inn» ble trykket.
-    // Bare lokale stier godtas, ellers ville dette vært en åpen videresending.
+    // Keycloak og tilbake hit. Markedsplassadministratoren går rett til
+    // administrasjonen (userflow 10); andre tilbake til siden der «Logg inn» ble
+    // trykket. Bare lokale stier godtas, ellers ville dette vært en åpen
+    // videresending.
     @GetMapping("/logg-inn")
-    public String logIn(@RequestParam(defaultValue = "/") String returnTo) {
-        return "redirect:" + localPathOrHome(returnTo);
+    public String logIn(@RequestParam(defaultValue = "/") String returnTo, Authentication authentication) {
+        var administrator = authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+        return "redirect:" + (administrator ? "/app/admin" : localPathOrHome(returnTo));
     }
 
     private static String localPathOrHome(String returnTo) {

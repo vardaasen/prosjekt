@@ -267,6 +267,13 @@ class PublicMarketplaceControllerTest {
     }
 
     @Test
+    void sendsMarketplaceAdministratorsStraightToAdministrationAfterLogin() throws Exception {
+        mockMvc.perform(get("/logg-inn").param("returnTo", "/utstyr").with(user("admin").roles("ADMIN")))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("/app/admin"));
+    }
+
+    @Test
     void refusesToReturnToOtherSites() throws Exception {
         for (var returnTo : new String[] {"//evil.example/x", "https://evil.example", "/\\evil.example", "utstyr"}) {
             mockMvc.perform(get("/logg-inn").param("returnTo", returnTo)
