@@ -60,6 +60,14 @@ Sist oppdatert: 2026-09-24
   `SELLER` inntil #19, Til nettstedet og Logg ut. Gjeldende side markeres med
   `aria-current`. Markedsplassadministratoren er en egen innlogging som ikke
   handler (0010) og har bare Administrasjon og Logg ut.
+- Verifisering av tilknytninger (#18): administrasjonen viser tilknytninger
+  som venter og en oversikt over alle, med hvem som avgjorde, når og hvorfor.
+  Verifiser, avvis og trekk tilbake følger livssyklusen i domenet; avvisning
+  og tilbaketrekking krever begrunnelse, som personen ser på Min side.
+  Auditsporet (V8) er bare til å legge til. Optimistisk låsing hindrer
+  doble beslutninger ved flere administratorer (0010). Navn og e-post slås
+  opp i Keycloak ved vurdering og lagres ikke. Den gamle selgersøknaden er
+  holdt tydelig adskilt til den fjernes (#26).
 
 ## Nåværende arkitektur
 

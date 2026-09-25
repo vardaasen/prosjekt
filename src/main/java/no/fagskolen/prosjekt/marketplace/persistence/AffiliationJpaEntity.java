@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import no.fagskolen.prosjekt.marketplace.domain.AffiliationStatus;
 
 import java.time.Instant;
@@ -34,6 +35,18 @@ class AffiliationJpaEntity {
 
     @Column(name = "registered_at", nullable = false, updatable = false)
     private Instant registeredAt;
+
+    @Column(name = "decided_by")
+    private String decidedBy;
+
+    @Column(name = "decided_at")
+    private Instant decidedAt;
+
+    @Column(name = "reason")
+    private String reason;
+
+    @Version
+    private long version;
 
     protected AffiliationJpaEntity() {
     }
@@ -64,5 +77,24 @@ class AffiliationJpaEntity {
 
     Instant registeredAt() {
         return registeredAt;
+    }
+
+    String decidedBy() {
+        return decidedBy;
+    }
+
+    Instant decidedAt() {
+        return decidedAt;
+    }
+
+    String reason() {
+        return reason;
+    }
+
+    void recordDecision(AffiliationStatus status, String decidedBy, Instant decidedAt, String reason) {
+        this.status = status;
+        this.decidedBy = decidedBy;
+        this.decidedAt = decidedAt;
+        this.reason = reason;
     }
 }

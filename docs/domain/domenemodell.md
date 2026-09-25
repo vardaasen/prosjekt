@@ -257,7 +257,7 @@ stateDiagram-v2
 
 | Entitet | Personopplysninger | Formål | Behandlingsgrunnlag | Lagringstid | Slettes når |
 | --- | --- | --- | --- | --- | --- |
-| Person | e-postadresse, navn, Keycloak-subject | innlogging, kontakt, varsler | avtale (åpent, S10) | åpent (#28) | personen sletter kontoen eller er inaktiv (åpent) |
+| Person | Keycloak-subject lagres; navn og e-post slås opp i Keycloak når administratoren vurderer en tilknytning, og lagres ikke (#18) | innlogging, kontakt, varsler | avtale (åpent, S10) | åpent (#28) | personen sletter kontoen eller er inaktiv (åpent) |
 | Virksomhet | normalt ingen; enkeltpersonforetak er personopplysninger | part i handel | avtale | så lenge den har annonser, bud eller handler | åpent (#28) |
 | Tilknytning | kobling person–virksomhet, hvem som verifiserte | tilgang og tillit | avtale / berettiget interesse (åpent) | åpent | trukket tilbake + frist (åpent) |
 | Verifiseringsgrunnlag | vurderinger kan nevne personer i dokumentene; hvilken administrator som vurderte | annonsegodkjenning og handelsverifisering | avtale / berettiget interesse (åpent) | åpent | sammen med annonsen (åpent) |
