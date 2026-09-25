@@ -22,10 +22,6 @@ record AppNavigation(List<Link> links) {
         }
         var links = new ArrayList<Link>();
         links.add(new Link("Min side", "", false));
-        // Gammel modell (0006) inntil utkast eies av virksomheten (#19, #26).
-        if (roles.contains("SELLER")) {
-            links.add(new Link("Selgerområde", "selgeromrade", false));
-        }
         links.add(new Link("Til nettstedet", "/", true));
         return new AppNavigation(List.copyOf(links));
     }

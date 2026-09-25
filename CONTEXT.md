@@ -72,7 +72,8 @@ _Avoid_: Kvalitet, status
 
 **Utkast**:
 En annonse under utarbeidelse, eid av en virksomhet og bare synlig for
-personer med tilknytning til den.
+personer med verifisert tilknytning til den. Et utkast kan bare lages med
+verifisert tilknytning.
 _Avoid_: Kladd, upublisert annonse
 
 **Annonsegodkjenning**:

@@ -4,6 +4,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
 import no.fagskolen.prosjekt.marketplace.affiliations.Affiliations;
 import no.fagskolen.prosjekt.marketplace.applications.SellerApplications;
+import no.fagskolen.prosjekt.marketplace.listings.BusinessListings;
 import no.fagskolen.prosjekt.marketplace.people.PersonDirectory;
 import no.fagskolen.prosjekt.marketplace.applications.SellerRoleProvisioner;
 import org.junit.jupiter.api.Test;
@@ -48,17 +49,22 @@ class AdminWorkspaceViewSmokeTest {
     @Autowired
     private PersonDirectory personDirectory;
 
+    @Autowired
+    private BusinessListings businessListings;
+
     @Test
     void constructsWithoutThrowing() {
-        assertThatCode(() -> new AdminWorkspaceView(sellerApplications, affiliations, personDirectory))
+        assertThatCode(() -> new AdminWorkspaceView(sellerApplications, affiliations, personDirectory, businessListings))
                 .doesNotThrowAnyException();
     }
 
     @Test
     void keepsAffiliationsAndTheOldSellerApplicationsClearlyApart() {
-        var view = new AdminWorkspaceView(sellerApplications, affiliations, personDirectory);
+        var view = new AdminWorkspaceView(sellerApplications, affiliations, personDirectory, businessListings);
 
         assertThat(headings(view)).containsSubsequence(
+                "Annonser til godkjenning",
+                "Alle annonser",
                 "Tilknytninger som venter",
                 "Alle tilknytninger",
                 "Selgersøknader (gammel ordning, fjernes)");

@@ -36,7 +36,7 @@ hvert valg skal kunne spores tilbake.
 | 8–9 | Drift og lokal demo | Delvis |
 | 10 | Navigasjon, innlogging og utlogging | Delvis implementert |
 | 11 | Tilknytning til virksomhet | Implementert uten varsler (#16, #18) |
-| 12 | Annonse fra utkast til publisert | Utkast (0007) |
+| 12 | Annonse fra utkast til publisert | Implementert uten filer og varsler (#19, #22) |
 | 13 | Bud | Utkast (0007) |
 | 14 | Handel og handelsverifisering | Utkast (0007) |
 | 15 | Lagret annonse | Utkast |

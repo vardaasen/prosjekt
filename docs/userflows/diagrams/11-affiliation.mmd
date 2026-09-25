@@ -5,11 +5,11 @@ flowchart TD
     C -- Ja --> E[Bruk eksisterende virksomhet]
     D --> F[Tilknytning opprettes med status Venter]
     E --> F
-    F --> G[Personen kan lage utkast og gi bud, men ikke publisere eller fullføre handel]
+    F --> G[Personen kan gi bud, men ikke lage annonser eller fullføre handel]
     F --> H[Administrator vurderer tilknytningen]
     H --> I{Beslutning}
     I -- Verifiser --> J[Verifisert: personen varsles]
     I -- Avvis med begrunnelse --> K[Avvist: personen varsles med begrunnelse]
-    J --> L[Personen kan sende annonser til godkjenning og fullføre handler]
+    J --> L[Personen kan lage annonser, se virksomhetens annonser og fullføre handler]
     J --> M{Senere: administrator trekker tilbake?}
     M -- Ja --> N[Trukket tilbake: personen varsles, annonsene lever videre hos virksomheten]

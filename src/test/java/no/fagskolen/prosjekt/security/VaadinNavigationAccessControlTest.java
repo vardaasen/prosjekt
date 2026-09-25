@@ -5,7 +5,6 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
 import no.fagskolen.prosjekt.admin.AdminWorkspaceView;
 import no.fagskolen.prosjekt.marketplace.ui.AppMenuLayout;
 import no.fagskolen.prosjekt.marketplace.ui.MinSideView;
-import no.fagskolen.prosjekt.marketplace.ui.SellerWorkspaceView;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -50,13 +49,6 @@ class VaadinNavigationAccessControlTest {
         assertThat(hasAccess(AdminWorkspaceView.class, "SELLER")).isFalse();
         assertThat(hasAccess(AdminWorkspaceView.class, "BUYER")).isFalse();
         assertThat(hasAccess(AdminWorkspaceView.class, "ADMIN")).isTrue();
-    }
-
-    @Test
-    void onlySellersMayOpenTheSellerWorkspace() {
-        assertThat(hasAccess(SellerWorkspaceView.class, null)).isFalse();
-        assertThat(hasAccess(SellerWorkspaceView.class, "BUYER")).isFalse();
-        assertThat(hasAccess(SellerWorkspaceView.class, "SELLER")).isTrue();
     }
 
     @Test

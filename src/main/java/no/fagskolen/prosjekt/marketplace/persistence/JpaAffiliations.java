@@ -40,10 +40,14 @@ class JpaAffiliations implements Affiliations {
             String personSubject, OrganisationNumber organisationNumber, String name, String location) {
         var now = clock.instant();
         var subject = personSubject.trim();
-        var requested = new Business(UUID.randomUUID(), organisationNumber, name, location);
+        // En eksisterende virksomhet gjenbrukes uendret; navnet valideres bare når den
+        // opprettes (funnet i #19: en kollega uten navn ble avvist).
         var business = businesses.findByOrganisationNumber(organisationNumber.value())
-                .orElseGet(() -> businesses.save(new BusinessJpaEntity(
-                        requested.id(), organisationNumber.value(), requested.name(), requested.location(), now)));
+                .orElseGet(() -> {
+                    var requested = new Business(UUID.randomUUID(), organisationNumber, name, location);
+                    return businesses.save(new BusinessJpaEntity(
+                            requested.id(), organisationNumber.value(), requested.name(), requested.location(), now));
+                });
         var affiliation = affiliations.findForPersonAndBusiness(subject, business.id())
                 .orElseGet(() -> {
                     var created = affiliations.save(

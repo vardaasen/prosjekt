@@ -208,7 +208,7 @@ Avvist betyr «aldri godtatt», trukket tilbake betyr «ikke lenger godtatt»
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Utkast : person lager utkast (12, F)
+    [*] --> Utkast : person med verifisert tilknytning lager utkast (12, F)
     Utkast --> TilGodkjenning : verifisert tilknytning sender, teksten er validert (12, J–L)
     TilGodkjenning --> Utkast : administrator ber om endring med tilbakemelding (12, N–O)
     TilGodkjenning --> Publisert : administrator godkjenner (12, N–P)

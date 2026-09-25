@@ -36,7 +36,7 @@ demo-selgeren:
 | Brukernavn | `seller-demo` |
 | Passord | `seller-demo-password` |
 
-`buyer-demo` har bare rollen `BUYER` og får ikke tilgang til selgerområdet på `/app/selgeromrade`, men når Min side på `/app`. Disse
+Alle innloggede demobrukere når Min side på `/app`. Annonser lages der for en virksomhet personen har tilknytning til, og publiseres etter verifisering og annonsegodkjenning (0007). Disse
 brukerne og administratorpassordets Compose-standardverdi er kun for lokal
 utvikling. De må ikke brukes eller importeres til staging eller produksjon.
 
@@ -137,8 +137,7 @@ av de tre rollene over).
 ## Kjente fallgruver
 
 - **Vaadin eier bare `/app`**: Vaadin er kartlagt på `/app/*`
-  (`vaadin.url-mapping`), med Min side på `/app`, selgerområdet på
-  `/app/selgeromrade` og administrasjonen på
+  (`vaadin.url-mapping`), med Min side på `/app` og administrasjonen på
   `/app/admin`. Offentlige sider på roten er Spring MVC/Thymeleaf
   (beslutningsnotat 0002/0003). Tidligere lå Vaadin på roten (`/*`) og
   kolliderte med forsiden på `/`: grå skjerm, evig «Connection lost»-løkke,
@@ -168,7 +167,7 @@ av de tre rollene over).
 - **Utlogging er bare `POST /logout` med CSRF-token**: `GET /logout` logger
   ikke ut. Ellers kunne et annet nettsted logge brukeren ut av både
   markedsplassen og Keycloak-SSO-økten bare ved å lenke dit. «Logg ut» er
-  derfor et lite skjema: `LogoutForm` i Vaadin-flatene (`/app`, `/app/selgeromrade`, `/app/admin`)
+  derfor et lite skjema: `LogoutForm` i Vaadin-flatene (`/app`, `/app/admin`)
   og et Thymeleaf-skjema på `/selgersoknad`.
   Å skrive `http://localhost:8080/logout` i adressefeltet logger derfor
   ikke ut; bruk knappen.
