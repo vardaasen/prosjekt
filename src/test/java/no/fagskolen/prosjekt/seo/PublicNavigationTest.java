@@ -34,15 +34,12 @@ class PublicNavigationTest {
     }
 
     @Test
-    void addsAdministrationForMarketplaceAdministrators() {
+    void givesMarketplaceAdministratorsOnlyTheAdministration() {
         var navigation = PublicNavigation.forVisitor(withRoles("ADMIN"), "/");
 
         assertThat(navigation.links()).extracting(PublicNavigation.Link::label, PublicNavigation.Link::href)
-                .containsExactly(
-                        org.assertj.core.groups.Tuple.tuple("Utforsk utstyr", "/utstyr"),
-                        org.assertj.core.groups.Tuple.tuple("Selg utstyr", "/selg"),
-                        org.assertj.core.groups.Tuple.tuple("Min side", "/app"),
-                        org.assertj.core.groups.Tuple.tuple("Administrasjon", "/app/admin"));
+                .containsExactly(org.assertj.core.groups.Tuple.tuple("Administrasjon", "/app/admin"));
+        assertThat(navigation.loggedIn()).isTrue();
     }
 
     @Test

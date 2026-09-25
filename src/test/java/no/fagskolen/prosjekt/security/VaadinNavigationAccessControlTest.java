@@ -3,6 +3,7 @@ package no.fagskolen.prosjekt.security;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import no.fagskolen.prosjekt.admin.AdminWorkspaceView;
+import no.fagskolen.prosjekt.marketplace.ui.AppMenuLayout;
 import no.fagskolen.prosjekt.marketplace.ui.MinSideView;
 import no.fagskolen.prosjekt.marketplace.ui.SellerWorkspaceView;
 import org.junit.jupiter.api.Test;
@@ -64,6 +65,15 @@ class VaadinNavigationAccessControlTest {
         assertThat(hasAccess(MinSideView.class, "")).isTrue();
         assertThat(hasAccess(MinSideView.class, "SELLER")).isTrue();
         assertThat(hasAccess(MinSideView.class, "ADMIN")).isTrue();
+    }
+
+    @Test
+    void theAppLayoutAroundEveryViewIsOpenToLoggedInPersonsOnly() {
+        // Vaadin sjekker tilgang for layouten i tillegg til visningen; en layout
+        // uten annotasjon er lukket og stenger alle ruter den omslutter.
+        assertThat(hasAccess(AppMenuLayout.class, null)).isFalse();
+        assertThat(hasAccess(AppMenuLayout.class, "")).isTrue();
+        assertThat(hasAccess(AppMenuLayout.class, "ADMIN")).isTrue();
     }
 
     private boolean hasAccess(Class<?> view, String role) {

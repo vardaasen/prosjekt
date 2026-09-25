@@ -15,7 +15,6 @@ import no.fagskolen.prosjekt.marketplace.applications.SellerApplications;
 import no.fagskolen.prosjekt.marketplace.applications.SellerRoleProvisioningException;
 import no.fagskolen.prosjekt.marketplace.domain.SellerApplication;
 import no.fagskolen.prosjekt.marketplace.domain.SellerApplicationAuditEntry;
-import no.fagskolen.prosjekt.security.LogoutForm;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
@@ -52,7 +51,6 @@ public class AdminWorkspaceView extends VerticalLayout {
         setPadding(true);
         add(
                 new H1("Administrasjon"),
-                new LogoutForm(),
                 new Paragraph("Vurder selgersøknader. Godkjenning tildeler ikke rettigheter før Keycloak har bekreftet SELLER-rollen."),
                 new Paragraph("Ventende selgersøknader"),
                 pendingApplications);

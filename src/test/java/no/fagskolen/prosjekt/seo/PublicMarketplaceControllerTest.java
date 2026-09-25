@@ -247,9 +247,21 @@ class PublicMarketplaceControllerTest {
     }
 
     @Test
-    void linksMarketplaceAdministratorsToAdministration() throws Exception {
-        mockMvc.perform(get("/").with(user("admin").roles("ADMIN")))
-                .andExpect(content().string(containsString("href=\"/app/admin\">Administrasjon</a>")));
+    void sendsMarketplaceAdministratorsFromPublicPagesToAdministration() throws Exception {
+        // Administratoren er en egen innlogging som ikke surfer (0010).
+        for (var page : new String[] {"/", "/utstyr", "/utstyr/sentrifugalpumpe-450", "/selg", "/selgersoknad"}) {
+            mockMvc.perform(get(page).with(user("admin").roles("ADMIN")))
+                    .andExpect(status().isFound())
+                    .andExpect(redirectedUrl("/app/admin"));
+        }
+    }
+
+    @Test
+    void doesNotRedirectMarketplaceAdministratorsFromCrawlerAndErrorEndpoints() throws Exception {
+        for (var endpoint : new String[] {"/robots.txt", "/sitemap.xml", "/tilgang-nektet", "/innlogging-feilet"}) {
+            mockMvc.perform(get(endpoint).with(user("admin").roles("ADMIN")))
+                    .andExpect(redirectedUrl(null));
+        }
     }
 
     @Test
