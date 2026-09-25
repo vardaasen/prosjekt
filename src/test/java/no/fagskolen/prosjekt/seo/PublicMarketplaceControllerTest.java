@@ -66,7 +66,8 @@ class PublicMarketplaceControllerTest {
         mockMvc.perform(get("/selg"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Har du allerede en konto?")))
-                .andExpect(content().string(containsString("href=\"/selgersoknad\"")))
+                .andExpect(content().string(containsString("href=\"/logg-inn\"")))
+                .andExpect(content().string(not(containsString("href=\"/selgersoknad\""))))
                 .andExpect(content().string(containsString("Selvregistrering er ikke åpnet ennå.")))
                 .andExpect(content().string(containsString(
                         "<meta name=\"robots\" content=\"noindex,follow\">")));
@@ -239,7 +240,7 @@ class PublicMarketplaceControllerTest {
     @Test
     void showsLogoutInsteadOfLoginToLoggedInPersons() throws Exception {
         mockMvc.perform(get("/utstyr").with(oidcLogin().idToken(token -> token.subject("buyer-subject"))))
-                .andExpect(content().string(containsString("href=\"/selg\">Selg utstyr</a>")))
+                .andExpect(content().string(containsString("href=\"/app\">Selg utstyr</a>")))
                 .andExpect(content().string(containsString("href=\"/app\">Min side</a>")))
                 .andExpect(content().string(containsString("<form method=\"post\" action=\"/logout\">")))
                 .andExpect(content().string(not(containsString("Logg inn</a>"))))
