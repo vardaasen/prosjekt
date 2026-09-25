@@ -7,7 +7,7 @@ Forskningsnotat for issue vardaasen/prosjekt#14. Kilder hentet 2026-09-25. Alle 
 - **Tillat bare JPEG og PNG for bilder og PDF for dokumenter.** Dette er formatene Java leser uten ekstra avhengigheter (ImageIO for bilder, PDFBox for PDF). HEIC og WebP krever egne biblioteker, og HEIC krever native kode med LGPL-/patentspørsmål.
 - **Avgjør filtypen ut fra innholdet, ikke fra filnavnet.** Apache Tika (`tika-core`, Apache 2.0) sjekker magiske bytes. Grensene settes på serveren: i Vaadin `UploadHandler` og Spring multipart. Vaadins standard er *ingen* grense for filstørrelse.
 - **Alle bilder kodes om på serveren.** Bildet dekodes, EXIF-rotasjonen brukes, bildet skaleres ned og skrives som ny JPEG. Da forsvinner EXIF og GPS, og polyglot-innhold ødelegges. OWASP anbefaler slik omskriving eksplisitt.
-- **PDF valideres og avvises heller enn å saneres.** Filen skal ikke være kryptert, ikke ha JavaScript, OpenAction eller innebygde filer, og sidetallet skal ligge under en grense. Metadata fjernes med PDFBox. Dokumenter leveres alltid som `attachment` med `nosniff` og CSP `sandbox`.
+- **PDF behandles som upålitelig også etter nedlasting.** Krypterte PDF-er og PDF-er over sidegrensen avvises. Alle aktive konstruksjoner fjernes før lagring: dokument-JavaScript, OpenAction og tilleggshandlinger (AA) på katalog, sider og annotasjoner, handlinger på lenker og skjemafelt, AcroForm/XFA og innebygde filer. Lykkes ikke fjerningen, avvises filen. Metadata fjernes med PDFBox. Svarhodene `attachment`, `nosniff` og CSP `sandbox` beholdes, men de beskytter bare nettleseren, ikke en PDF-leser som åpner filen lokalt.
 - **Virusskanning med ClamAV (GPLv2) er mulig som egen container via clamd `INSTREAM`**, men trenger 3–4 GB RAM. Det foreslås som en egen compose-profil, og produkteier må ta stilling til det.
 - **Lagring: PostgreSQL `bytea` i egen tabell bak et `FileStorage`-grensesnitt.** Det er enklest for prototypen: én backup, sletting i samme transaksjon og ingen ekstra tjeneste. MinIO er arkivert og distribueres bare som kildekode. SeaweedFS (Apache 2.0) er et aktuelt S3-alternativ senere. Garage (AGPLv3) er også et alternativ, men mangler blant annet bucket policies.
 - **LLM/visjonsmodell tas ikke med i første versjon.** Enkle kontroller med biblioteker pluss admin-godkjenning dekker behovet. En LLM ville sendt bildepiksler og dokumentinnhold, som kan inneholde navn og signaturer, til en tredjepart.
@@ -88,7 +88,10 @@ Prosjektets egen `docs/security-baseline.md` krever allerede allow-list for MIME
 
 - En PDF kan ha dokument-JavaScript som kjøres ved åpning, en OpenAction, tilleggshandlinger (AA), AcroForm-skjemaer og innebygde filer. PDFBox eksponerer alt dette: `PDDocumentNameDictionary.getJavaScript()`, som PDFBox beskriver som *«When the document is opened, all the JavaScript actions in it shall be executed»*, `getEmbeddedFiles()`, og `PDDocumentCatalog.getOpenAction()`, `getActions()` og `getAcroForm()` [19][20].
 - **Tiltak som kan gjennomføres:** avvis krypterte PDF-er (`PDDocument.isEncrypted()` [21]) og PDF-er med dokument-JavaScript, OpenAction av JavaScript- eller Launch-type eller innebygde filer. Fjern metadata, og lagre en ny kopi med `PDDocument.save()`.
-- Dette er ikke full CDR. Handlinger på lenker og annotasjoner per side dekkes ikke av sjekkene over. Full CDR ville vært å rastrere hver side til bilde med PDFBox [22], men da mister dokumentet tekst og søkbarhet, og filen blir større. Derfor serveres PDF-er alltid som nedlasting (`Content-Disposition: attachment`) med `X-Content-Type-Options: nosniff` og CSP `sandbox`, som hindrer skript og plugins [23].
+- **Sjekkene over er ikke nok alene.** Handlinger på sider (`PDPage`-tilleggshandlinger), på annotasjoner og lenker, og i skjemafelt dekkes ikke av dem. Svarhodene `Content-Disposition: attachment`, `X-Content-Type-Options: nosniff` og CSP `sandbox` [23] hindrer skript i nettleseren, men de endrer ikke filen. En administrator eller kjøper som laster ned og åpner PDF-en i en lokal eller ekstern PDF-leser er fortsatt eksponert for handlinger som ligger igjen i filen (Aikido-funn på PR #31).
+- **Anbefalt tiltak:** gå gjennom katalog, alle sider og alle annotasjoner med PDFBox og fjern alle handlinger (JavaScript, Launch, SubmitForm, ImportData, GoToR/GoToE og tilleggshandlinger), AcroForm og XFA, og innebygde filer. Lagre så en ny kopi. Hvis fjerningen feiler eller filen ikke kan tolkes, avvises den. At PDFBox-APIet dekker alle disse stedene, må verifiseres med testfiler **(ikke bekreftet)**.
+- **Høyeste sikkerhetsnivå** er full CDR: rastrer hver side til bilde med PDFBox [22]. Da forsvinner all aktiv kode, men dokumentet mister tekst og søkbarhet, og filen blir større. Det er et alternativ hvis originalen ikke skal beholdes, eller som en ekstra forhåndsvisning ved siden av originalen.
+- Hvis originalen beholdes for nedlasting, skal brukeren få en tydelig advarsel om at filen kommer fra en annen virksomhet.
 - PDFBox 3 bruker en cache bare i minnet som standard. Med `IOUtils`/`ScratchFile` kan cachen legges på midlertidig fil [24]. For store eller ondsinnede PDF-er gir det mindre minnepress. Ved OOM foreslår PDFBox scratch-fil [25].
 - PDFBox har lisens Apache 2.0. Nåværende versjon er 3.0.8 (2026-07-11) [22].
 
@@ -255,8 +258,10 @@ Selger (innlogget, SELLER, eier utkastet) i /app
              1. Tika på hele filen (må samsvare med header-fasen)
              2. [valgfritt, compose-profil] ClamAV INSTREAM → funn/feil = avvis (fail-closed)
              3a. Bilde: dimensjoner før dekoding → dekod → EXIF-orientering → skaler → ny JPEG
-             3b. PDF:  PDFBox (temp-fil-cache) → ikke kryptert, sider ≤ grense,
-                       ingen JS/OpenAction/EmbeddedFiles → fjern Info/XMP → lagre ny kopi
+             3b. PDF:  PDFBox (temp-fil-cache) → ikke kryptert, sider ≤ grense
+                       → fjern alle handlinger (katalog, sider, annotasjoner, lenker,
+                         skjemafelt), AcroForm/XFA og innebygde filer
+                       → fjern Info/XMP → lagre ny kopi; feiler noe → avvis
              4. SHA-256, UUID, lagre metadata + bytes i én transaksjon
              5. Vis resultat eller feilmelding i dialogen (tidlig tilbakemelding til selger)
  └─ Annonse sendes til godkjenning → admin ser bilder, alt-tekst og dokumenter
@@ -289,7 +294,7 @@ Annonser trenger bilder og dokumenter. Opplastede filer er upålitelig input: sk
 
 **Konsekvens**
 - Positivt: ingen ny lagringstjeneste, transaksjonell sletting, én backup, metadata fjernet som standard, dokumenter lukket som standard, tidlig avvisning i opplastingsdialogen.
-- Negativt: iPhone-brukere kan møte HEIC-avvisning (må testes), noen legitime PDF-er med skjema eller JavaScript avvises, ClamAV øker RAM-kravet i Compose, og databasen og backupen vokser med filene.
+- Negativt: iPhone-brukere kan møte HEIC-avvisning (må testes), PDF-er mister skjemaer, lenkehandlinger og innebygde filer, og kan fortsatt være risikable å åpne lokalt uten full CDR, ClamAV øker RAM-kravet i Compose, og databasen og backupen vokser med filene.
 - Oppfølging: nytt notat ved LLM-vurdering, ved bytte til objektlagring eller ved ekstern skannetjeneste. Oppdater `docs/security-baseline.md` punkt 3 når dette er implementert.
 
 ---

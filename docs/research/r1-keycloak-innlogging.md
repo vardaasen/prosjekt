@@ -216,7 +216,8 @@ Standardflyten *First Broker Login* ([ADMIN – First login flow](https://www.ke
 
 Etter prinsippet om den **enkleste løsningen som oppfyller kravene** (0009):
 
-1. **Keycloak 26.7.4 med kun innebygde mekanismer:**
+0. **Forutsetning før selvregistrering slås på** i et miljø som er nåbart utenfra: misbruksvern må være på plass og testet. Det betyr rate limiting på registrering og på utsending av verifiserings-e-post, både globalt og per kilde og konto, før e-post sendes. Beslutningsnotat 0006 krever dette («Før registrering aktiveres må appen ha rate limiting …»), og det gjelder fortsatt etter 0007. Keycloaks intervall for ny utsending av verifiserings-e-post er bare en brukeropplevelseskontroll, ikke misbruksvern. Hvor begrensningen skal ligge (foran Keycloak i en reverse proxy, eller i Keycloak), avgjøres i eget beslutningsnotat (Aikido-funn på PR #31). I den lokale demoen, som bare er bundet til `127.0.0.1`, kan registrering være på.
+1. **Keycloak 26.7.4 med kun innebygde mekanismer**, når forutsetning 0 er oppfylt:
    - *User registration* = ON, *Email as username* = ON, *Verify email* = ON og *Forgot password* = ON.
    - Brukerprofilen minimeres til e-post. Fornavn og etternavn gjøres valgfrie eller fjernes.
    - Med 26.7-flyten får brukeren: e-post → verifiser → velg passkey eller passord → tilbake til «Selg utstyr».
