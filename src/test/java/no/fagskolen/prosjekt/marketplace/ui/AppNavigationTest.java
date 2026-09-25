@@ -31,13 +31,11 @@ class AppNavigationTest {
     }
 
     @Test
-    void keepsTheOldSellerAreaReachableForSellersUntilTheMigration() {
+    void givesSellersTheSameMenuAsEveryoneElse() {
+        // Selgerområdet er borte; annonser lages på Min side ut fra tilknytningen (#19).
         assertThat(AppNavigation.forRoles(Set.of("SELLER")).links())
-                .extracting(AppNavigation.Link::label, AppNavigation.Link::href)
-                .containsExactly(
-                        tuple("Min side", ""),
-                        tuple("Selgerområde", "selgeromrade"),
-                        tuple("Til nettstedet", "/"));
+                .extracting(AppNavigation.Link::label)
+                .containsExactly("Min side", "Til nettstedet");
     }
 
     @Test

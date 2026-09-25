@@ -7,15 +7,16 @@ Dette er en prototype-baseline, ikke en full sikkerhetssertifisering. Punktene s
 - **Identitet:** Lokal utvikling bruker Keycloak som en separat OIDC-leverandør.
   Markedsplass-appen lagrer ikke passord og bruker Authorization Code med PKCE
   for innlogging under `/app`.
-- **Tilgang:** Min side (`/app`) krever innlogging; selgerområdet (`/app/selgeromrade`) krever Keycloak-rollen `SELLER` inntil migreringen etter 0007 (#19, #26); alle offentlige SEO-ruter
+- **Tilgang:** Min side (`/app`) krever innlogging. Bare en verifisert tilknytning kan lage, endre og se virksomhetens annonser og sende dem til godkjenning; en tilknytning som venter gir ingen innsyn, siden hvem som helst kan registrere et organisasjonsnummer. Bare administratoren publiserer (0007, 0009); alle offentlige SEO-ruter
   forblir anonyme. Keycloak realm-roller mappes eksplisitt til Spring
   authorities med `ROLE_`-prefiks.
 - **Selgereierskap:** En `SellerAccount` kobler Keycloaks stabile `sub` til en
   selger uten å kopiere bruker- eller passorddata. Kontoregistrering er
   idempotent, slik at gjentatt innlogging ikke oppretter flere selgerkontoer.
-- **Utkast:** Nye utkast har en databasefremmednøkkel til eierens
-  `SellerAccount`. Søk etter utkast filtreres på den innloggede kontoens
-  OIDC-subject, slik at en selger ikke kan se en annens utkast.
+- **Utkast:** Utkast eies av virksomheten og refererer til tilknytningen de
+  ble laget gjennom. Søk filtreres på personens verifiserte tilknytninger på
+  serveren, slik at ingen ser utkast fra en virksomhet de ikke er verifisert
+  for. Hver endring står i et auditspor som bare kan legges til.
 - **Publisering:** En annonse kan bare publiseres når serveren finner den som
   et `DRAFT` med både slug og den innloggede selgerkontoens OIDC-subject.
   Optimistisk låsing avviser konkurrerende endringer i stedet for å

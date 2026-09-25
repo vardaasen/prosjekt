@@ -58,6 +58,26 @@ class ListingJpaEntity {
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal priceNok;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "business_id")
+    private BusinessJpaEntity business;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_through_affiliation_id", updatable = false)
+    private AffiliationJpaEntity createdThroughAffiliation;
+
+    @Column(name = "review_feedback")
+    private String reviewFeedback;
+
+    @Column(name = "submitted_at")
+    private java.time.Instant submittedAt;
+
+    @Column(name = "decided_by")
+    private String decidedBy;
+
+    @Column(name = "decided_at")
+    private java.time.Instant decidedAt;
+
     @Column(nullable = false)
     private String sellerName;
 
@@ -206,5 +226,78 @@ class ListingJpaEntity {
     void publish(LocalDate publicationDate) {
         publicationStatus = ListingPublicationStatus.PUBLISHED;
         publishedAt = publicationDate;
+    }
+
+    /** Et utkast eid av en virksomhet (userflow 12). */
+    static ListingJpaEntity draftFor(
+            BusinessJpaEntity business,
+            AffiliationJpaEntity createdThroughAffiliation,
+            String slug,
+            no.fagskolen.prosjekt.marketplace.domain.ListingContent content) {
+        var entity = new ListingJpaEntity();
+        entity.slug = slug;
+        entity.title = content.title();
+        entity.location = content.location();
+        entity.condition = content.condition();
+        entity.category = content.category();
+        entity.publicationStatus = ListingPublicationStatus.DRAFT;
+        entity.priceNok = content.priceNok();
+        entity.sellerName = business.name();
+        entity.verifiedSeller = false;
+        entity.sellerLocation = business.location();
+        entity.business = business;
+        entity.createdThroughAffiliation = createdThroughAffiliation;
+        entity.summary = content.summary();
+        entity.documentation = new LinkedHashSet<>();
+        return entity;
+    }
+
+    Long id() {
+        return id;
+    }
+
+    BusinessJpaEntity business() {
+        return business;
+    }
+
+    String reviewFeedback() {
+        return reviewFeedback;
+    }
+
+    AffiliationJpaEntity createdThroughAffiliation() {
+        return createdThroughAffiliation;
+    }
+
+    void updateContent(no.fagskolen.prosjekt.marketplace.domain.ListingContent content) {
+        title = content.title();
+        location = content.location();
+        condition = content.condition();
+        category = content.category();
+        priceNok = content.priceNok();
+        summary = content.summary();
+    }
+
+    void submit(ListingPublicationStatus newStatus, java.time.Instant at) {
+        publicationStatus = newStatus;
+        submittedAt = at;
+    }
+
+    void approve(ListingPublicationStatus newStatus, String administratorSubject, java.time.Instant at, LocalDate date) {
+        publicationStatus = newStatus;
+        decidedBy = administratorSubject;
+        decidedAt = at;
+        publishedAt = date;
+        reviewFeedback = null;
+        // Publisert etter verifisert tilknytning og annonsegodkjenning (0007).
+        verifiedSeller = true;
+        sellerName = business.name();
+    }
+
+    void returnForChanges(ListingPublicationStatus newStatus, String administratorSubject, java.time.Instant at,
+            String feedback) {
+        publicationStatus = newStatus;
+        decidedBy = administratorSubject;
+        decidedAt = at;
+        reviewFeedback = feedback.trim();
     }
 }

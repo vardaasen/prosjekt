@@ -28,7 +28,7 @@ beskriver et bredere målbilde enn den implementerte prototypen.
 | 9. Lokal demo og rollebytte | Ferdig for lokal demo | Demo-identiteter, Keycloak-profil, søknad, godkjenning, reinnlogging og 403-/innloggingsfeil | Selvregistrering og produksjonsidentiteter |
 | 10. Navigasjon, innlogging og utlogging | Delvis | Offentlig meny med Min side, egen appmeny på alle appsider, innlogging lander på Min side (administrator på Administrasjon), logg ut via Keycloak til forsiden | Retur etter innlogging midt i en oppgave, varsler. Se `navigasjon-og-innlogging.md` |
 | 11. Tilknytning til virksomhet | Implementert uten varsler | Registrere virksomhet på Min side (#16); administratoren verifiserer, avviser og trekker tilbake med begrunnelse og auditspor, og personen ser status og begrunnelse på Min side (#18) | E-postvarsel (#15) |
-| 12. Annonse fra utkast til publisert | Utkast (0007) | – | Alt |
+| 12. Annonse fra utkast til publisert | Implementert uten filer og varsler | Utkast på Min side, innsending ved verifisert tilknytning, godkjenning eller tilbakemelding fra administratoren, publisering med virksomheten som selger (#19, #22) | Bilder og dokumentasjon (#23), varsler (#15), tidlig validering utover påkrevde felt (#20) |
 | 13. Bud | Utkast (0007) | – | Alt |
 | 14. Handel og handelsverifisering | Utkast (0007) | – | Alt |
 | 15. Lagret annonse | Utkast | – | Alt |
@@ -271,12 +271,12 @@ flowchart TD
     C -- Ja --> E[Bruk eksisterende virksomhet]
     D --> F[Tilknytning opprettes med status Venter]
     E --> F
-    F --> G[Personen kan lage utkast og gi bud, men ikke publisere eller fullføre handel]
+    F --> G[Personen kan gi bud, men ikke lage annonser eller fullføre handel]
     F --> H[Administrator vurderer tilknytningen]
     H --> I{Beslutning}
     I -- Verifiser --> J[Verifisert: personen varsles]
     I -- Avvis med begrunnelse --> K[Avvist: personen varsles med begrunnelse]
-    J --> L[Personen kan sende annonser til godkjenning og fullføre handler]
+    J --> L[Personen kan lage annonser, se virksomhetens annonser og fullføre handler]
     J --> M{Senere: administrator trekker tilbake?}
     M -- Ja --> N[Trukket tilbake: personen varsles, annonsene lever videre hos virksomheten]
 ```
@@ -285,19 +285,23 @@ flowchart TD
 
 Beslutningsnotat 0007. Ingen egen status for avslått; en uakseptabel annonse arkiveres (S4).
 
+Besluttet ved manuell test (2026-09-25): et utkast kan bare lages, endres og ses med verifisert tilknytning (tillegg til 0007), og kan endres helt til det sendes til godkjenning, også etter tilbakemelding. En verifisert kollega kan sende inn et utkast laget av en person som ikke lenger er verifisert. Utkastet åpnes da til gjennomgang med forklaring, kollegaen må skrive en merknad om hva som er kontrollert, og merknaden står i auditsporet og vises for administratoren. Hver endring av annonsen står i et auditspor som bare kan legges til.
+
 ```mermaid
 flowchart TD
     A[Person trykker Selg utstyr] --> B{Innlogget?}
     B -- Nei --> C[Bekreft e-post: registrering eller innlogging, #21]
     C --> D
-    B -- Ja --> D{Tilknytning til mer enn én virksomhet?}
+    B -- Ja --> V{Verifisert tilknytning?}
+    V -- Nei --> W[Registrer virksomhet eller vent på verifisering, userflow 11]
+    V -- Ja --> D{Verifisert tilknytning til mer enn én virksomhet?}
     D -- Ja --> E[Velg virksomhet]
     D -- Nei --> F[Nytt utkast for virksomheten]
     E --> F
     F --> G[Fyll ut tekst, validering ved feltet]
     G --> H[Legg til bilder og dokumentasjon, #14]
     H --> I[Lagre utkast, fortsett senere fra en annen enhet]
-    I --> J{Verifisert tilknytning og teksten består valideringen?}
+    I --> J{Tilknytningen fortsatt verifisert og teksten består valideringen?}
     J -- Nei --> K[Vis hva som mangler: verifisering eller felt]
     K --> G
     J -- Ja --> L[Send til godkjenning]

@@ -21,6 +21,10 @@ import no.fagskolen.prosjekt.marketplace.domain.AffiliationAuditEntry;
 import no.fagskolen.prosjekt.marketplace.domain.AffiliationStatus;
 import no.fagskolen.prosjekt.marketplace.domain.SellerApplication;
 import no.fagskolen.prosjekt.marketplace.domain.SellerApplicationAuditEntry;
+import no.fagskolen.prosjekt.marketplace.listings.BusinessListing;
+import no.fagskolen.prosjekt.marketplace.listings.BusinessListings;
+import no.fagskolen.prosjekt.marketplace.listings.ListingAuditEntry;
+import no.fagskolen.prosjekt.marketplace.ui.ListingTexts;
 import no.fagskolen.prosjekt.marketplace.people.PersonContact;
 import no.fagskolen.prosjekt.marketplace.people.PersonDirectory;
 import no.fagskolen.prosjekt.marketplace.ui.AffiliationTexts;
@@ -46,13 +50,45 @@ public class AdminWorkspaceView extends VerticalLayout {
     private final Map<String, String> people = new HashMap<>();
     private final Grid<Affiliation> pendingAffiliations = new Grid<>(Affiliation.class, false);
     private final Grid<Affiliation> allAffiliations = new Grid<>(Affiliation.class, false);
+    private final BusinessListings businessListings;
+    private final Grid<BusinessListing> listingsAwaitingApproval = new Grid<>(BusinessListing.class, false);
+    private final Grid<BusinessListing> allListings = new Grid<>(BusinessListing.class, false);
 
     public AdminWorkspaceView(
             SellerApplications sellerApplications,
             Affiliations affiliations,
-            PersonDirectory personDirectory) {
+            PersonDirectory personDirectory,
+            BusinessListings businessListings) {
         this.affiliations = affiliations;
         this.personDirectory = personDirectory;
+        this.businessListings = businessListings;
+
+        listingsAwaitingApproval.addColumn(BusinessListing::title).setHeader("Tittel");
+        listingsAwaitingApproval.addColumn(BusinessListing::businessName).setHeader("Virksomhet");
+        listingsAwaitingApproval.addColumn(this::creator).setHeader("Laget av");
+        listingsAwaitingApproval.addColumn(listing -> listing.condition().displayName()).setHeader("Tilstand");
+        listingsAwaitingApproval.addColumn(listing -> listing.priceNok().toPlainString() + " kr").setHeader("Pris");
+        listingsAwaitingApproval.addColumn(BusinessListing::location).setHeader("Lokasjon");
+        listingsAwaitingApproval.addColumn(BusinessListing::summary).setHeader("Beskrivelse").setFlexGrow(3);
+        listingsAwaitingApproval.addComponentColumn(listing -> {
+            var approve = new Button("Godkjenn", event -> decide(() ->
+                    businessListings.approve(listing.id(), currentAdministratorSubject()),
+                    "Annonsen er godkjent og publisert."));
+            approve.addThemeVariants(ButtonVariant.PRIMARY);
+            return approve;
+        }).setHeader("Godkjenn");
+        listingsAwaitingApproval.addComponentColumn(listing -> reasonButton(
+                "Be om endring", "Hva må endres i «" + listing.title() + "»?", "Send tilbake",
+                (feedback, subject) -> businessListings.returnForChanges(listing.id(), subject, feedback),
+                "Annonsen er sendt tilbake med tilbakemelding.")).setHeader("Be om endring");
+        listingsAwaitingApproval.setAllRowsVisible(true);
+
+        allListings.addColumn(BusinessListing::title).setHeader("Tittel");
+        allListings.addColumn(BusinessListing::businessName).setHeader("Virksomhet");
+        allListings.addColumn(listing -> ListingTexts.status(listing.status())).setHeader("Status");
+        allListings.addColumn(this::creator).setHeader("Laget av");
+        allListings.addComponentColumn(this::listingAuditButton).setHeader("Revisjonsspor");
+        allListings.setAllRowsVisible(true);
 
         pendingAffiliations.addColumn(this::business).setHeader("Virksomhet");
         pendingAffiliations.addColumn(affiliation -> person(affiliation.personSubject())).setHeader("Person");
@@ -116,6 +152,12 @@ public class AdminWorkspaceView extends VerticalLayout {
         setPadding(true);
         add(
                 new H1("Administrasjon"),
+                new H2("Annonser til godkjenning"),
+                new Paragraph("Godkjenn annonser som er i orden, eller send dem tilbake med tilbakemelding. "
+                        + "Bare virksomheter med verifisert tilknytning kan sende annonser hit."),
+                listingsAwaitingApproval,
+                new H2("Alle annonser"),
+                allListings,
                 new H2("Tilknytninger som venter"),
                 new Paragraph("Verifiser at personen handler for virksomheten. Navn og e-post hentes fra "
                         + "innloggingstjenesten når du ser saken, og lagres ikke."),
@@ -205,6 +247,41 @@ public class AdminWorkspaceView extends VerticalLayout {
     private void refreshAffiliations() {
         pendingAffiliations.setItems(affiliations.findPending());
         allAffiliations.setItems(affiliations.findAll());
+        listingsAwaitingApproval.setItems(businessListings.findAwaitingApproval());
+        allListings.setItems(businessListings.findAll());
+    }
+
+    private String creator(BusinessListing listing) {
+        if (listing.createdBySubject() == null) {
+            return "";
+        }
+        var name = person(listing.createdBySubject());
+        return listing.createdByVerified() ? name : name + " (ikke lenger verifisert)";
+    }
+
+    private Button listingAuditButton(BusinessListing listing) {
+        var audit = new Button("Vis");
+        audit.addClickListener(event -> {
+            var entries = new Grid<ListingAuditEntry>(ListingAuditEntry.class, false);
+            entries.addColumn(entry -> listingAction(entry.action())).setHeader("Handling");
+            entries.addColumn(entry -> person(entry.actorSubject())).setHeader("Utført av");
+            entries.addColumn(entry -> AffiliationTexts.time(entry.occurredAt())).setHeader("Tidspunkt");
+            entries.addColumn(entry -> entry.note() == null ? "" : entry.note()).setHeader("Merknad");
+            entries.setItems(businessListings.findAuditTrail(listing.id()));
+            new Dialog(new H2("Revisjonsspor for «" + listing.title() + "»"), entries).open();
+        });
+        return audit;
+    }
+
+    private static String listingAction(ListingAuditEntry.Action action) {
+        return switch (action) {
+            case CREATED -> "Utkast laget";
+            case UPDATED -> "Utkast endret";
+            case SUBMITTED -> "Sendt til godkjenning";
+            case SUBMITTED_FOR_UNVERIFIED_CREATOR -> "Sendt til godkjenning for kollega som ikke lenger er verifisert";
+            case APPROVED -> "Godkjent og publisert";
+            case RETURNED_FOR_CHANGES -> "Sendt tilbake med tilbakemelding";
+        };
     }
 
     private Button rejectionButton(

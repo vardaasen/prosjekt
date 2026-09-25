@@ -33,9 +33,9 @@ Virksomheten er part i annonser, bud og handler. En person handler for en
 virksomhet gjennom en tilknytning som markedsplassadministratoren verifiserer.
 Selger og kjøper er roller i en bestemt annonse eller handel.
 
-- Innlogget person uten verifisert tilknytning kan registrere en virksomhet,
-  lage utkast og gi bud. Tilknytningen opprettes første gang den trengs; det
-  finnes ikke noe eget søknadssteg.
+- Innlogget person uten verifisert tilknytning kan registrere en virksomhet
+  og gi bud. Tilknytningen opprettes første gang den trengs; det finnes ikke
+  noe eget søknadssteg. (Utkast krever verifisert tilknytning, se tillegg.)
 - Ingenting blir synlig på markedsplassen før verifisering. En annonse krever
   verifisert tilknytning og annonsegodkjenning før publisering.
 - Hver handel verifiseres av markedsplassadministratoren før den regnes som
@@ -62,3 +62,14 @@ Selger og kjøper er roller i en bestemt annonse eller handel.
   - Lovpålagt oppbevaring av handler (for eksempel bokføringsregler) og hva
     som skal slettes når.
   - Om verifisering kan gjøres sømløs nok til at virksomheter ikke bremses.
+
+## Tillegg: utkast krever verifisert tilknytning (2026-09-25)
+
+Manuell test av #19/#22 viste at utkast laget før verifisering havnet hos
+kollegaene i virksomheten, og at hvem som helst som registrerte et
+organisasjonsnummer fikk innsyn i virksomhetens utkast. Produkteier besluttet
+den enkleste regelen: **et utkast kan bare lages, endres og ses med verifisert
+tilknytning**. Bare utkast laget av verifiserte personer havner hos kollegaene.
+Et utkast laget av en person som senere mister verifiseringen, kan sendes inn
+av en verifisert kollega etter en advarsel og en bekreftelse som står i
+auditsporet. Bud før verifisering er uendret.

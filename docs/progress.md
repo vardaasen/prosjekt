@@ -68,13 +68,23 @@ Sist oppdatert: 2026-09-24
   doble beslutninger ved flere administratorer (0010). Navn og e-post slås
   opp i Keycloak ved vurdering og lagres ikke. Den gamle selgersøknaden er
   holdt tydelig adskilt til den fjernes (#26).
+- Annonse fra utkast til publisert (#19, #22, userflow 12): annonser eies av
+  virksomheten (V9). En person med tilknytning lager utkast på Min side og
+  ser virksomhetens annonser i alle statuser; bare en verifisert tilknytning
+  sender til godkjenning; administratoren godkjenner eller ber om endring med
+  tilbakemelding. Slug genereres fra tittelen. Katalogen viser nyeste først.
+  Det gamle selgerområdet med direkte publisering er fjernet; resten av den
+  gamle modellen fjernes i #26. Utkast krever verifisert tilknytning (tillegg
+  til 0007) og kan endres til de sendes inn; en verifisert kollega må bekrefte
+  før et utkast fra en person som ikke lenger er verifisert, sendes inn. Auditspor for
+  annonser (V10) og en oversikt over alle annonser i administrasjonen.
 
 ## Nåværende arkitektur
 
 | Flate | Teknologi | Status |
 | --- | --- | --- |
 | Offentlig lesing og SEO | Spring MVC + Thymeleaf | Prototype fungerer |
-| Innlogget appflate | Vaadin Flow + Keycloak OIDC under `/app/*` | Min side (`/app`) for alle innloggede, `/app/selgeromrade` krever `SELLER`, `/app/admin` krever `ADMIN`; `@RolesAllowed` håndheves av Vaadin |
+| Innlogget appflate | Vaadin Flow + Keycloak OIDC under `/app/*` | Min side (`/app`) for alle innloggede, `/app/admin` krever `ADMIN`; `@RolesAllowed` håndheves av Vaadin; tilgang til annonser følger tilknytningen |
 | Data | PostgreSQL + Flyway + JPA Data Mapper | Aktiv katalogadapter; in-memory-adapter beholdes for enhetstester |
 | Identitet og tilgang | Keycloak OIDC + Spring Security | Lokal demo-realm; produksjonskonfigurasjon gjenstår |
 | Administrator og godkjenning | Beslutning 0006 + userflow 7 | Ikke implementert; må være på plass før selvregistrering |
