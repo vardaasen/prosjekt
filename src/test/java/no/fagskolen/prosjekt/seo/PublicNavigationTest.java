@@ -30,6 +30,9 @@ class PublicNavigationTest {
 
             assertThat(labels(navigation)).containsExactly("Utforsk utstyr", "Selg utstyr", "Min side");
             assertThat(navigation.loggedIn()).isTrue();
+            // «Selg utstyr» starter en annonse; innlogget skjer det i appen (userflow 10).
+            assertThat(navigation.links()).filteredOn(link -> link.label().equals("Selg utstyr"))
+                    .extracting(PublicNavigation.Link::href).containsExactly("/app");
         }
     }
 
